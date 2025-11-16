@@ -202,6 +202,7 @@ custom_constants/shadow_offset_x = 0
 text = "Z"
 
 [node name="MetaRedoButton" type="Button" parent="VirtualButtons/Verbs"]
+visible = false
 margin_left = 7.0
 margin_top = 248.0
 margin_right = 30.0
