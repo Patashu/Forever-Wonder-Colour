@@ -2957,7 +2957,6 @@ var last_dir_release_times = [0, 0, 0, 0];
 var key_repeat_timer_dict = {};
 var key_repeat_timer_max_dict = {};
 var virtual_button_held_dict = {"meta_undo": false, "meta_redo": false,
-"character_undo": false,
 "ui_left": false, "ui_right": false, "ui_up": false, "ui_down": false,
 "replay_back1": false, "replay_fwd1": false, "speedup_replay": false, "slowdown_replay": false};
 var key_repeat_this_frame_dict = {};
