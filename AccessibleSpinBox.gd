@@ -1,0 +1,25 @@
+extends SpinBox
+class_name AccessibleSpinBox
+
+func _input(event):
+	# the line edit inside of us
+	if !self.get_child(0).has_focus():
+		return
+	
+	if (event.is_action_pressed("ui_left") or Input.is_action_just_pressed("nonaxis_left")):
+		if (Input.is_action_pressed("ctrl") or Input.is_action_pressed("shift")):
+			pass
+		else:
+			self.value -= 1;
+			get_viewport().set_input_as_handled();
+	elif (event.is_action_pressed("ui_right") or Input.is_action_just_pressed("nonaxis_right")):
+		if (Input.is_action_pressed("ctrl") or Input.is_action_pressed("shift")):
+			pass
+		else:
+			self.value += 1;
+			get_viewport().set_input_as_handled();
+	else:
+		if event is InputEventKey:
+			if event.scancode >= 58 and event.scancode <= 126: #most of the keys, none of the numbers nor -
+				get_viewport().set_input_as_handled();
+		pass

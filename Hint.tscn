@@ -1,0 +1,36 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://default_styleboxtexture.tres" type="StyleBox" id=1]
+[ext_resource path="res://DefaultTheme.tres" type="Theme" id=2]
+[ext_resource path="res://level_editor/Instructions.gd" type="Script" id=3]
+
+[node name="Instructions" type="Node2D"]
+script = ExtResource( 3 )
+
+[node name="Holder" type="Label" parent="."]
+margin_left = 19.0
+margin_top = 37.0
+margin_right = 493.0
+margin_bottom = 253.0
+theme = ExtResource( 2 )
+custom_styles/normal = ExtResource( 1 )
+text = "Rules Overview
+
+* All Sokoban rules apply, except to win you collect all Stars then step on the Goal.
+* Collecting a star is not Undoable. Instead, the order in which you collect stars is remembered, and Unwin will uncollect the most recently collected star(s).
+* Blocks can't push blocks. However, Stars are solid and can push and be pushed by everything, except the Player (who would rather collect them).
+* An Ice Block that moves attempts to move again (unless it's over a Hole).
+* At the end of each turn, Holes with a Player or Block on their tile destroy each other. Bottomless Pits (hole with red infinity symbol) are just indestructible Holes.
+* Collecting a star melts all Ice Blocks in the surrounding 3x3 area. The melting can be Undone, the collection can be Unwon. You can choose to do one, both or neither.
+* Custom Puzzles may have non-vanilla elements. Refer to the Level Editor (or experiment) to learn what they do."
+align = 1
+autowrap = true
+
+[node name="OkButton" type="Button" parent="Holder"]
+margin_left = 186.0
+margin_top = 199.0
+margin_right = 297.0
+margin_bottom = 214.0
+text = "Ok"
+
+[node name="Pointer" type="Sprite" parent="Holder"]

@@ -1,0 +1,139 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://default_styleboxtexture.tres" type="StyleBox" id=1]
+[ext_resource path="res://DefaultTheme.tres" type="Theme" id=2]
+[ext_resource path="res://Menu.gd" type="Script" id=3]
+
+[node name="Menu" type="Node2D"]
+script = ExtResource( 3 )
+
+[node name="Holder" type="Label" parent="."]
+margin_left = 171.0
+margin_top = 84.0
+margin_right = 340.0
+margin_bottom = 244.0
+theme = ExtResource( 2 )
+custom_styles/normal = ExtResource( 1 )
+text = "Unwin v1.3 - Pause Menu"
+align = 1
+
+[node name="OkButton" type="Button" parent="Holder"]
+margin_left = 9.0
+margin_top = 17.0
+margin_right = 74.0
+margin_bottom = 32.0
+focus_neighbour_left = NodePath("../YourReplayButton")
+focus_neighbour_top = NodePath("../InsightButton")
+text = "Continue"
+
+[node name="YourReplayButton" type="Button" parent="Holder"]
+margin_left = 78.0
+margin_top = 17.0
+margin_right = 160.0
+margin_bottom = 32.0
+focus_neighbour_top = NodePath("../HintButton")
+focus_neighbour_right = NodePath("../OkButton")
+text = "Your Replay"
+
+[node name="AuthorsReplayButton" type="Button" parent="Holder"]
+margin_left = 78.0
+margin_top = 35.0
+margin_right = 144.0
+margin_bottom = 50.0
+focus_neighbour_right = NodePath("../LevelEditorButton")
+text = "Author's Replay"
+
+[node name="SaveReplayButton" type="Button" parent="Holder"]
+margin_left = 78.0
+margin_top = 53.0
+margin_right = 160.0
+margin_bottom = 68.0
+focus_neighbour_top = NodePath("../AuthorsReplayButton")
+focus_neighbour_bottom = NodePath("../CopyReplayButton")
+text = "Save Replay"
+
+[node name="CopyReplayButton" type="Button" parent="Holder"]
+margin_left = 78.0
+margin_top = 71.0
+margin_right = 160.0
+margin_bottom = 86.0
+focus_neighbour_right = NodePath("../ControlsButton")
+text = "Copy Replay"
+
+[node name="PasteReplayButton" type="Button" parent="Holder"]
+margin_left = 78.0
+margin_top = 89.0
+margin_right = 160.0
+margin_bottom = 104.0
+focus_neighbour_right = NodePath("../SettingsButton")
+text = "Paste Replay"
+
+[node name="LevelEditorButton" type="Button" parent="Holder"]
+margin_left = 9.0
+margin_top = 35.0
+margin_right = 74.0
+margin_bottom = 50.0
+focus_neighbour_left = NodePath("../AuthorsReplayButton")
+focus_neighbour_bottom = NodePath("../ControlsButton")
+text = "Level Editor"
+
+[node name="ControlsButton" type="Button" parent="Holder"]
+margin_left = 9.0
+margin_top = 71.0
+margin_right = 74.0
+margin_bottom = 86.0
+focus_neighbour_left = NodePath("../CopyReplayButton")
+focus_neighbour_top = NodePath("../LevelEditorButton")
+text = "Controls"
+
+[node name="HintButton" type="Button" parent="Holder"]
+margin_left = 79.0
+margin_top = 139.0
+margin_right = 160.0
+margin_bottom = 154.0
+focus_neighbour_right = NodePath("../InsightButton")
+focus_neighbour_bottom = NodePath("../YourReplayButton")
+text = "Rules Overview"
+
+[node name="SettingsButton" type="Button" parent="Holder"]
+margin_left = 9.0
+margin_top = 89.0
+margin_right = 74.0
+margin_bottom = 104.0
+focus_neighbour_left = NodePath("../PasteReplayButton")
+text = "Settings"
+
+[node name="RestartButton" type="Button" parent="Holder"]
+margin_left = 9.0
+margin_top = 107.0
+margin_right = 74.0
+margin_bottom = 122.0
+focus_neighbour_left = NodePath("../QuitGameButton")
+text = "Restart"
+
+[node name="InsightButton" type="Button" parent="Holder"]
+margin_left = 9.0
+margin_top = 139.0
+margin_right = 74.0
+margin_bottom = 154.0
+focus_neighbour_left = NodePath("../HintButton")
+focus_neighbour_bottom = NodePath("../OkButton")
+text = "Gain Insight"
+
+[node name="QuitGameButton" type="Button" parent="Holder"]
+margin_left = 78.0
+margin_top = 107.0
+margin_right = 160.0
+margin_bottom = 122.0
+focus_neighbour_right = NodePath("../RestartButton")
+text = "Quit Game"
+
+[node name="Pointer" type="Sprite" parent="Holder"]
+
+[node name="Label" type="Label" parent="Holder"]
+margin_left = 12.0
+margin_top = 126.0
+margin_right = 160.0
+margin_bottom = 137.0
+text = "Stuck? Try these:"
+align = 1

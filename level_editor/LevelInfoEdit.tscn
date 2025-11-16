@@ -1,0 +1,82 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://level_editor/LevelInfoEdit.gd" type="Script" id=1]
+[ext_resource path="res://default_styleboxtexture.tres" type="StyleBox" id=2]
+[ext_resource path="res://DefaultTheme.tres" type="Theme" id=3]
+
+[node name="LevelInfoEdit" type="Node2D"]
+script = ExtResource( 1 )
+
+[node name="Holder" type="Label" parent="."]
+margin_left = 145.0
+margin_top = 79.0
+margin_right = 368.0
+margin_bottom = 220.0
+rect_pivot_offset = Vector2( 129, 100 )
+theme = ExtResource( 3 )
+custom_styles/normal = ExtResource( 2 )
+text = "Level Info:"
+align = 1
+
+[node name="OkButton" type="Button" parent="Holder"]
+margin_left = 56.0
+margin_top = 121.0
+margin_right = 167.0
+margin_bottom = 136.0
+text = "Ok"
+
+[node name="Label7" type="Label" parent="Holder"]
+margin_left = 80.0
+margin_top = 103.0
+margin_right = 145.0
+margin_bottom = 114.0
+text = "Sky Colour"
+
+[node name="Label4" type="Label" parent="Holder"]
+margin_left = 151.0
+margin_top = 23.0
+margin_right = 213.0
+margin_bottom = 34.0
+text = "Level Name"
+
+[node name="Label5" type="Label" parent="Holder"]
+margin_left = 151.0
+margin_top = 50.0
+margin_right = 214.0
+margin_bottom = 61.0
+text = "Level Author"
+
+[node name="Label6" type="Label" parent="Holder"]
+margin_left = 151.0
+margin_top = 77.0
+margin_right = 214.0
+margin_bottom = 88.0
+text = "Level Replay"
+
+[node name="LevelName" type="TextEdit" parent="Holder"]
+margin_left = 8.0
+margin_top = 16.0
+margin_right = 145.0
+margin_bottom = 43.0
+
+[node name="LevelAuthor" type="TextEdit" parent="Holder"]
+margin_left = 8.0
+margin_top = 43.0
+margin_right = 145.0
+margin_bottom = 70.0
+
+[node name="LevelReplay" type="TextEdit" parent="Holder"]
+margin_left = 8.0
+margin_top = 70.0
+margin_right = 145.0
+margin_bottom = 97.0
+rect_pivot_offset = Vector2( -345, 60 )
+
+[node name="SkyColourButton" type="ColorPickerButton" parent="Holder"]
+margin_left = 8.0
+margin_top = 99.0
+margin_right = 142.0
+margin_bottom = 139.0
+rect_scale = Vector2( 0.5, 0.5 )
+
+[node name="Pointer" type="Sprite" parent="Holder"]

@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/goalclosing.ogg-55b46e3577772ac8f92da1c86353c157.oggstr"
+
+[deps]
+
+source_file="res://sfx/goalclosing.ogg"
+dest_files=[ "res://.import/goalclosing.ogg-55b46e3577772ac8f92da1c86353c157.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

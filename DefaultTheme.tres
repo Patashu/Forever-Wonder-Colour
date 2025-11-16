@@ -1,0 +1,80 @@
+[gd_resource type="Theme" load_steps=16 format=2]
+
+[ext_resource path="res://standardfont.tres" type="DynamicFont" id=1]
+[ext_resource path="res://default_styleboxtexture.tres" type="StyleBox" id=2]
+[ext_resource path="res://assets/radio_unchecked_disabled.png" type="Texture" id=3]
+[ext_resource path="res://assets/radio_checked.png" type="Texture" id=4]
+[ext_resource path="res://assets/radio_unchecked.png" type="Texture" id=5]
+[ext_resource path="res://assets/radio_checked_disabled.png" type="Texture" id=6]
+[ext_resource path="res://assets/checkbox_ticked.png" type="Texture" id=7]
+[ext_resource path="res://assets/checkbox_unticked.png" type="Texture" id=8]
+[ext_resource path="res://assets/checkbox_ticked_disabled.png" type="Texture" id=9]
+[ext_resource path="res://assets/checkbox_unticked_disabled.png" type="Texture" id=10]
+[ext_resource path="res://assets/optionbutton_updown.png" type="Texture" id=11]
+[ext_resource path="res://assets/spinbox_updown.png" type="Texture" id=12]
+[ext_resource path="res://assets/grabber_highlight.png" type="Texture" id=13]
+[ext_resource path="res://assets/grabber.png" type="Texture" id=14]
+[ext_resource path="res://assets/grabber_disabled.png" type="Texture" id=15]
+
+[resource]
+Button/colors/font_color = Color( 0.866667, 0.662745, 0.388235, 1 )
+Button/colors/font_color_disabled = Color( 0.145098, 0.152941, 0.164706, 1 )
+Button/colors/font_color_focus = Color( 0.878431, 0.72549, 0.290196, 1 )
+Button/colors/font_color_hover = Color( 0.858824, 0.756863, 0.686275, 1 )
+Button/colors/font_color_pressed = Color( 0.811765, 0.415686, 0.309804, 1 )
+Button/fonts/font = ExtResource( 1 )
+Button/styles/disabled = ExtResource( 2 )
+Button/styles/focus = ExtResource( 2 )
+Button/styles/hover = ExtResource( 2 )
+Button/styles/normal = ExtResource( 2 )
+Button/styles/pressed = ExtResource( 2 )
+CheckBox/icons/checked = ExtResource( 7 )
+CheckBox/icons/checked_disabled = ExtResource( 9 )
+CheckBox/icons/radio_checked = ExtResource( 4 )
+CheckBox/icons/radio_checked_disabled = ExtResource( 6 )
+CheckBox/icons/radio_unchecked = ExtResource( 5 )
+CheckBox/icons/radio_unchecked_disabled = ExtResource( 3 )
+CheckBox/icons/unchecked = ExtResource( 8 )
+CheckBox/icons/unchecked_disabled = ExtResource( 10 )
+HSlider/icons/grabber = ExtResource( 14 )
+HSlider/icons/grabber_disabled = ExtResource( 15 )
+HSlider/icons/grabber_highlight = ExtResource( 13 )
+Label/colors/font_color = Color( 0.866667, 0.662745, 0.388235, 1 )
+Label/colors/font_color_shadow = Color( 0, 0.0705882, 0.235294, 0.321569 )
+Label/fonts/font = ExtResource( 1 )
+LineEdit/colors/clear_button_color = Color( 0.866667, 0.662745, 0.388235, 1 )
+LineEdit/colors/clear_button_color_pressed = Color( 0.607843, 0.411765, 0.439216, 1 )
+LineEdit/colors/cursor_color = Color( 0.878431, 0.72549, 0.290196, 1 )
+LineEdit/colors/font_color = Color( 0.866667, 0.662745, 0.388235, 1 )
+LineEdit/fonts/font = ExtResource( 1 )
+MenuButton/fonts/font = ExtResource( 1 )
+MenuButton/styles/disabled = ExtResource( 2 )
+MenuButton/styles/focus = ExtResource( 2 )
+MenuButton/styles/hover = ExtResource( 2 )
+MenuButton/styles/normal = ExtResource( 2 )
+MenuButton/styles/pressed = ExtResource( 2 )
+OptionButton/icons/arrow = ExtResource( 11 )
+PopupMenu/colors/font_color = Color( 0.952941, 0.733333, 0.588235, 1 )
+PopupMenu/colors/font_color_disabled = Color( 0.756863, 0.54902, 0.447059, 1 )
+PopupMenu/colors/font_color_hover = Color( 1, 1, 1, 1 )
+PopupMenu/colors/font_color_separator = Color( 0.729412, 0.564706, 0.454902, 1 )
+PopupMenu/fonts/font = ExtResource( 1 )
+PopupMenu/fonts/font_separator = ExtResource( 1 )
+PopupMenu/icons/checked = ExtResource( 4 )
+PopupMenu/icons/radio_checked = ExtResource( 4 )
+PopupMenu/icons/radio_unchecked = ExtResource( 5 )
+PopupMenu/icons/unchecked = ExtResource( 5 )
+ProgressBar/colors/font_color = Color( 0.952941, 0.733333, 0.588235, 1 )
+ProgressBar/fonts/font = ExtResource( 1 )
+SpinBox/icons/updown = ExtResource( 12 )
+TabContainer/colors/font_color_bg = Color( 0.639216, 0.486275, 0.411765, 1 )
+TabContainer/colors/font_color_disabled = Color( 0.521569, 0.447059, 0.407843, 1 )
+TabContainer/colors/font_color_fg = Color( 0.952941, 0.733333, 0.588235, 1 )
+TabContainer/fonts/font = ExtResource( 1 )
+TextEdit/colors/font_color = Color( 0.866667, 0.662745, 0.388235, 1 )
+TextEdit/fonts/font = ExtResource( 1 )
+Tree/colors/font_color = Color( 0.952941, 0.733333, 0.588235, 1 )
+Tree/fonts/font = ExtResource( 1 )
+Tree/fonts/title_button_font = ExtResource( 1 )
+Tree/icons/checked = ExtResource( 7 )
+Tree/icons/unchecked = ExtResource( 8 )

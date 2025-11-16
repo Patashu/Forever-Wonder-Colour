@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://FloatingText.gd" type="Script" id=1]
+[ext_resource path="res://DefaultTheme.tres" type="Theme" id=2]
+
+[node name="FloatingText" type="Label"]
+theme = ExtResource( 2 )
+custom_colors/font_color = Color( 0.145098, 0.152941, 0.164706, 1 )
+custom_colors/font_color_shadow = Color( 0.858824, 0.756863, 0.686275, 1 )
+align = 1
+valign = 1
+script = ExtResource( 1 )

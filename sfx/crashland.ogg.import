@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/crashland.ogg-407ba8f08f65716fef27a18516dd6200.oggstr"
+
+[deps]
+
+source_file="res://sfx/crashland.ogg"
+dest_files=[ "res://.import/crashland.ogg-407ba8f08f65716fef27a18516dd6200.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

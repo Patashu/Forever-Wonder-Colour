@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/plummet.ogg-a5c934b47a96789f9d199112532dc979.oggstr"
+
+[deps]
+
+source_file="res://sfx/plummet.ogg"
+dest_files=[ "res://.import/plummet.ogg-a5c934b47a96789f9d199112532dc979.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0
