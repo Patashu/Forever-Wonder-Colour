@@ -10,7 +10,6 @@ var post_mortem : int = -1;
 var strength : int = 0
 var heaviness : int = 0
 var durability : int = 0
-var is_star : bool = false
 var is_character : bool = false
 # animation system logic
 var animation_timer : float = 0.0;
@@ -35,25 +34,19 @@ var movement_parity = false;
 # a part of, so other things that shared their tile can move with them
 var just_moved : bool = false;
 var fade_tween = null;
-# green
-var is_green = false;
-var time_bubble = null;
 
 enum PostMortems {
 	Fall,
-	Melt,
+	Frag,
 	Collect
 }
 
 # faster than string comparisons
 enum Name {
 	Player,
-	Star,
-	DirtBlock,
-	IceBlock,
 	Goal,
-	CrackedStar,
-	DarkStar,
+	StoneBlock,
+	WonderBlock,
 }
 
 func update_graphics() -> void:
@@ -73,34 +66,19 @@ func get_next_texture() -> Texture:
 			else:
 				return preload("res://assets/player_spritesheet.png");
 		
-		Name.Star:
-			return preload("res://assets/star_spritesheet.png");
-		
-		Name.DirtBlock:
+		Name.StoneBlock:
 			if broken:
 				return null;
 			else:
 				return preload("res://assets/dirt_block.png");
 				
-		Name.IceBlock:
+		Name.WonderBlock:
 			if broken:
 				return null;
 			else:
 				frame = 0;
 				return preload("res://assets/ice_melt_spritesheet.png");
-				
-		Name.CrackedStar:
-			if broken:
-				return null;
-			else:
-				return preload("res://assets/cracked_star.png");
-				
-		Name.DarkStar:
-			if broken:
-				return null;
-			else:
-				return preload("res://assets/dark_star.png");
-		
+	
 	return null;
 
 func set_next_texture(tex: Texture, facing_dir_at_the_time: Vector2) -> void:		
@@ -145,8 +123,6 @@ func set_next_texture(tex: Texture, facing_dir_at_the_time: Vector2) -> void:
 			animation_frame = 0;
 
 func pushable(by_actor: Actor) -> bool:
-	if (is_star and by_actor.actorname == Name.Player):
-		return false;
 	if (just_moved):
 		return false;
 	return !broken;
@@ -159,19 +135,6 @@ func phases_into_actors() -> bool:
 
 func afterimage() -> void:
 	gamelogic.afterimage(self);
-	
-func update_time_bubble():
-	if time_bubble != null:
-		time_bubble.queue_free();
-		time_bubble = null;
-	if is_green:
-		if (time_bubble == null):
-			time_bubble = Sprite.new();
-			time_bubble.set_script(preload("res://TimeBubble.gd"));
-			time_bubble.texture = preload("res://assets/time_bubble.png");
-			time_bubble.centered = true;
-			time_bubble.position = Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
-			self.add_child(time_bubble);
 
 func _process(delta: float) -> void:
 	#animated sprites
@@ -206,7 +169,7 @@ func _process(delta: float) -> void:
 			elif (blink_timer_max - blink_timer < 0.1):
 				frame += 4;
 			
-	elif actorname == Name.IceBlock:
+	elif actorname == Name.WonderBlock:
 		if moving != Vector2.ZERO:
 			frame_timer += delta;
 			if (frame_timer > frame_timer_max):
@@ -504,7 +467,7 @@ func _process(delta: float) -> void:
 					if actorname == Name.Player:
 						hole.frame = hole.hframes;
 						# TODO: do player kick here
-					elif (actorname == Name.IceBlock):
+					elif (actorname == Name.WonderBlock):
 						hole.frame = hole.hframes*2;
 					else:
 						hole.frame = 0;
@@ -631,12 +594,6 @@ func _process(delta: float) -> void:
 					texture = null;
 				else:
 					is_done = false;
-			15: #time_bubble
-				update_time_bubble();
-				gamelogic.play_sound("usegreenality");
-				gamelogic.undo_effect_strength = 0.4;
-				gamelogic.undo_effect_per_second = gamelogic.undo_effect_strength*(1);
-				gamelogic.undo_effect_color = gamelogic.meta_color;
 		if (is_done):
 			animations.pop_front();
 			animation_timer = 0;

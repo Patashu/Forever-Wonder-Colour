@@ -20,7 +20,7 @@ var just_danced = false;
 
 # Must keep in sync with GameLogic serialize_bindings/deserialize_bindings
 var actions = ["ui_accept", "ui_cancel", "escape", "ui_left", "ui_right", "ui_up", "ui_down",
-"character_undo", "meta_undo", "meta_redo", "character_unwin", "restart",
+"meta_undo", "meta_redo", "restart",
 "mute",
 "toggle_replay", "start_replay", "start_saved_replay",
 "speedup_replay", "slowdown_replay", "replay_pause", "replay_back1", "replay_fwd1", 
@@ -30,7 +30,7 @@ var actions = ["ui_accept", "ui_cancel", "escape", "ui_left", "ui_right", "ui_up
 ]
 
 var hrn_actions = ["Accept", "Cancel", "Menu", "Left", "Right", "Up", "Down",
-"Undo", "Really Undo", "Really Redo", "Unwin", "Restart",
+"Undo", "Redo", "Restart",
 "Mute",
 "Replay Mode", "Author's Replay", "Your Replay",
 "Replay Speed+", "Replay Speed-", "Replay Pause", "Replay Turn-", "Replay Turn+",
@@ -38,7 +38,7 @@ var hrn_actions = ["Accept", "Cancel", "Menu", "Left", "Right", "Up", "Down",
 
 var blacklist_1 = ["ui_accept", "ui_cancel", "escape", "ui_left", "ui_right", "ui_up", "ui_down"];
 var blacklist_2 = ["escape", "ui_left", "ui_right", "ui_up", "ui_down",
-"character_undo", "meta_undo", "meta_redo", "character_unwin", "restart",
+"meta_undo", "meta_redo", "restart",
 "mute", "start_replay", "toggle_replay", "speedup_replay",
 "slowdown_replay", "start_saved_replay",
 "replay_back1", "replay_fwd1", "replay_pause"];

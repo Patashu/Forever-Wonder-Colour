@@ -1,22 +1,18 @@
-[gd_scene load_steps=19 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://DefaultTiles.tres" type="TileSet" id=1]
 [ext_resource path="res://DefaultTheme.tres" type="Theme" id=2]
 [ext_resource path="res://GameLogic.gd" type="Script" id=3]
-[ext_resource path="res://light_styleboxtexture.tres" type="StyleBox" id=4]
 [ext_resource path="res://LevelScene.gd" type="Script" id=5]
-[ext_resource path="res://heavy_styleboxtexture.tres" type="StyleBox" id=6]
 [ext_resource path="res://assets/star.png" type="Texture" id=7]
 [ext_resource path="res://assets/tutorial_arrows/DownArrow.tres" type="Texture" id=8]
 [ext_resource path="res://assets/tutorial_arrows/LeftArrow.tres" type="Texture" id=9]
 [ext_resource path="res://assets/tutorial_arrows/RightArrow.tres" type="Texture" id=10]
 [ext_resource path="res://FadeIn.gd" type="Script" id=11]
 [ext_resource path="res://meta_styleboxtexture.tres" type="StyleBox" id=12]
-[ext_resource path="res://starbar/StarBar.gd" type="Script" id=13]
 [ext_resource path="res://Shade.gd" type="Script" id=36]
 [ext_resource path="res://assets/checkerboard.png" type="Texture" id=37]
 [ext_resource path="res://StarSprite.gd" type="Script" id=38]
-[ext_resource path="res://standardfont.tres" type="DynamicFont" id=39]
 [ext_resource path="res://OutlinedLabel.gd" type="Script" id=40]
 
 [node name="LevelScene" type="Node2D"]
@@ -64,22 +60,6 @@ modulate = Color( 1, 1, 1, 0 )
 texture = ExtResource( 7 )
 centered = false
 script = ExtResource( 38 )
-
-[node name="StarBar" type="Node2D" parent="."]
-position = Vector2( 502, 10 )
-script = ExtResource( 13 )
-
-[node name="TutorialLabel" type="RichTextLabel" parent="."]
-margin_left = 90.0
-margin_top = 265.0
-margin_right = 222.0
-margin_bottom = 309.0
-theme = ExtResource( 2 )
-custom_colors/default_color = Color( 0.952941, 0.733333, 0.588235, 1 )
-custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
-custom_constants/shadow_as_outline = 1
-custom_fonts/normal_font = ExtResource( 39 )
-bbcode_enabled = true
 
 [node name="ReplayButtons" type="Node2D" parent="."]
 visible = false
@@ -200,53 +180,10 @@ text = ">>"
 
 [node name="Verbs" type="Node2D" parent="VirtualButtons"]
 
-[node name="UndoButton" type="Button" parent="VirtualButtons/Verbs"]
-visible = false
+[node name="MetaUndoButton" type="Button" parent="VirtualButtons/Verbs"]
 margin_left = 7.0
 margin_top = 273.0
 margin_right = 30.0
-margin_bottom = 296.0
-theme = ExtResource( 2 )
-custom_styles/hover = ExtResource( 6 )
-custom_styles/pressed = ExtResource( 6 )
-custom_styles/focus = ExtResource( 6 )
-custom_styles/disabled = ExtResource( 6 )
-custom_styles/normal = ExtResource( 6 )
-
-[node name="Label" type="Label" parent="VirtualButtons/Verbs/UndoButton"]
-margin_left = 8.0
-margin_top = 6.0
-margin_right = 16.0
-margin_bottom = 17.0
-custom_constants/shadow_offset_x = 0
-text = "Z"
-
-[node name="UnwinButton" type="Button" parent="VirtualButtons/Verbs"]
-visible = false
-margin_left = 35.0
-margin_top = 273.0
-margin_right = 58.0
-margin_bottom = 296.0
-theme = ExtResource( 2 )
-custom_styles/hover = ExtResource( 4 )
-custom_styles/pressed = ExtResource( 4 )
-custom_styles/focus = ExtResource( 4 )
-custom_styles/disabled = ExtResource( 4 )
-custom_styles/normal = ExtResource( 4 )
-
-[node name="Label" type="Label" parent="VirtualButtons/Verbs/UnwinButton"]
-margin_left = 8.0
-margin_top = 6.0
-margin_right = 16.0
-margin_bottom = 17.0
-custom_constants/shadow_offset_x = 0
-text = "X"
-
-[node name="MetaUndoButton" type="Button" parent="VirtualButtons/Verbs"]
-visible = false
-margin_left = 63.0
-margin_top = 273.0
-margin_right = 86.0
 margin_bottom = 296.0
 theme = ExtResource( 2 )
 custom_styles/hover = ExtResource( 12 )
@@ -262,14 +199,13 @@ margin_right = 15.0
 margin_bottom = 17.0
 custom_colors/font_color = Color( 0.698039, 0.686275, 0.360784, 1 )
 custom_constants/shadow_offset_x = 0
-text = "C"
+text = "Z"
 
 [node name="MetaRedoButton" type="Button" parent="VirtualButtons/Verbs"]
-visible = false
-margin_left = 63.0
-margin_top = 245.0
-margin_right = 86.0
-margin_bottom = 268.0
+margin_left = 7.0
+margin_top = 248.0
+margin_right = 30.0
+margin_bottom = 271.0
 theme = ExtResource( 2 )
 custom_styles/hover = ExtResource( 12 )
 custom_styles/pressed = ExtResource( 12 )
@@ -279,12 +215,12 @@ custom_styles/normal = ExtResource( 12 )
 text = "Y"
 
 [node name="MetaRedoLabel" type="Label" parent="VirtualButtons/Verbs/MetaRedoButton"]
-margin_left = -31.0
+margin_left = 28.0
 margin_top = 6.0
-margin_right = -1.0
+margin_right = 58.0
 margin_bottom = 17.0
 custom_colors/font_color = Color( 0.698039, 0.686275, 0.360784, 1 )
-text = "Redo:"
+text = "Redo"
 
 [node name="Label" type="Label" parent="VirtualButtons/Verbs/MetaRedoButton"]
 margin_left = 8.0

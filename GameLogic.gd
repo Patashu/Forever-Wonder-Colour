@@ -11,10 +11,8 @@ onready var underactorsparticles : Node2D = levelscene.get_node("UnderActorsPart
 onready var menubutton : Button = levelscene.get_node("MenuButton");
 onready var levellabel : Label = levelscene.get_node("LevelLabel");
 onready var levelstar : Sprite = levelscene.get_node("LevelStar");
-onready var starbar : StarBar = levelscene.get_node("StarBar");
 onready var winlabel : Node2D = levelscene.get_node("WinLabel");
 onready var metainfolabel : Label = levelscene.get_node("MetaInfoLabel");
-onready var tutoriallabel : RichTextLabel = levelscene.get_node("TutorialLabel");
 onready var downarrow : Sprite = levelscene.get_node("DownArrow");
 onready var leftarrow : Sprite = levelscene.get_node("LeftArrow");
 onready var rightarrow : Sprite = levelscene.get_node("RightArrow");
@@ -36,7 +34,6 @@ onready var metaredobuttonlabel : Label = metaredobutton.get_node("MetaRedoLabel
 # ghosts is for undo trail ghosts
 enum Chrono {
 	MOVE
-	CHAR_UNDO
 	META_UNDO
 	TIMELESS
 	GHOSTS
@@ -77,16 +74,9 @@ enum Success {
 enum Undo {
 	move, #0
 	set_actor_var, #1
-	red_turn, #2
-	blue_turn, #3
-	red_undo_event_add, #4
-	blue_undo_event_add, #5
-	red_undo_event_remove, #6
-	blue_undo_event_remove, #7
-	animation_substep, #8
-	change_terrain, #9
-	sfx, #10
-	time_bubble, #11
+	animation_substep, #2
+	change_terrain, #3
+	sfx, #4
 }
 
 # and same for animations
@@ -106,7 +96,6 @@ enum Anim {
 	fall, #12
 	intro, #13
 	outro, #14
-	time_bubble, #15
 }
 
 enum Greenness {
@@ -123,21 +112,14 @@ enum Tiles {
 	Wall,
 	Player,
 	Win,
-	Star,
-	DirtBlock,
-	IceBlock,
-	Hole,
-	BottomlessPit,
-	Water,
-	Ice,
-	MagicBarrier,
-	CrackedStar,
-	DarkStar,
-	GreenAura,
+	StoneBlock,
+	WonderBlock,
 	OneWayWest,
 	OneWaySouth,
 	OneWayNorth,
 	OneWayEast,
+	SpliceFlower,
+	DepthDoor,
 }
 
 # information about the level
@@ -167,14 +149,13 @@ var voidlike_puzzle : bool = false;
 var player : Actor = null
 var actors : Array = []
 var goals : Array = []
-var hole_sprites : Dictionary = {}
-# red is for 'undo', blue is for 'unwin', meta/green is for 'really undo'
-var red_turn : int = 0;
-var red_undo_buffer : Array = [];
-var blue_turn : int = 0;
-var blue_undo_buffer : Array = [];
+#var hole_sprites : Dictionary = {}
+# only one undo buffer in this game :) hooray :)
 var meta_turn : int = 0;
 var meta_undo_buffer : Array = [];
+# history!
+var history_moves : String = "";
+var tutorial_complete : bool = false;
 
 # for afterimages
 var afterimage_server : Dictionary = {}
@@ -267,17 +248,6 @@ var chapter_advanced_unlock_requirements : Array = [];
 var save_file_string : String = "user://unwin.sav";
 
 var is_web : bool = false;
-
-var starticipation_timer : float = 0.0;
-var starticipation_timer_max : float = 1.0;
-
-# tutorial system
-var z_shown : bool = false;
-var z_used : bool = false;
-var x_shown : bool = false;
-var x_used : bool = false;
-var c_shown : bool = false;
-var c_used : bool = false;
 
 func save_game():
 	var file = File.new()
@@ -394,7 +364,7 @@ func setup_gui_holder() -> void:
 	GuiHolder = CanvasLayer.new();
 	GuiHolder.name = "GuiHolder";
 	get_parent().get_parent().add_child(GuiHolder);
-	var ui_elements = [levelstar, levellabel, replaybuttons, virtualbuttons, winlabel, tutoriallabel, metainfolabel, menubutton];
+	var ui_elements = [levelstar, levellabel, replaybuttons, virtualbuttons, winlabel, metainfolabel, menubutton];
 	for ui_element in ui_elements:
 		ui_element.get_parent().remove_child(ui_element);
 		GuiHolder.add_child(ui_element);
@@ -407,12 +377,6 @@ func add_to_ui_stack(node: Node, parent: Node = null) -> void:
 		GuiHolder.add_child(node);
 
 func connect_virtual_buttons() -> void:
-	virtualbuttons.get_node("Verbs/UndoButton").connect("button_down", self, "_undobutton_pressed");
-	virtualbuttons.get_node("Verbs/UndoButton").connect("button_up", self, "_undobutton_released");
-	virtual_button_name_to_action["UndoButton"] = "character_undo";
-	virtualbuttons.get_node("Verbs/UnwinButton").connect("button_down", self, "_unwinbutton_pressed");
-	virtualbuttons.get_node("Verbs/UnwinButton").connect("button_up", self, "_unwinbutton_released");
-	virtual_button_name_to_action["UnwinButton"] = "character_unwin";
 	virtualbuttons.get_node("Verbs/MetaUndoButton").connect("button_down", self, "_metaundobutton_pressed");
 	virtualbuttons.get_node("Verbs/MetaUndoButton").connect("button_up", self, "_metaundobutton_released");
 	virtual_button_name_to_action["MetaUndoButton"] = "meta_undo";
@@ -470,13 +434,7 @@ func virtual_button_released(action: String) -> void:
 	menubutton.release_focus();
 	if (virtual_button_held_dict.has(action)):
 		virtual_button_held_dict[action] = false;
-	
-func _undobutton_pressed() -> void:
-	virtual_button_pressed("character_undo");
-	
-func _unwinbutton_pressed() -> void:
-	virtual_button_pressed("character_unwin");
-	
+
 func _metaundobutton_pressed() -> void:
 	virtual_button_pressed("meta_undo");
 	
@@ -512,13 +470,7 @@ func _nextturnbutton_pressed() -> void:
 	
 func _pausebutton_pressed() -> void:
 	virtual_button_pressed("replay_pause");
-	
-func _undobutton_released() -> void:
-	virtual_button_released("character_undo");
-	
-func _unwinbutton_released() -> void:
-	virtual_button_released("character_unwin");
-	
+
 func _metaundobutton_released() -> void:
 	virtual_button_released("meta_undo");
 	
@@ -599,7 +551,7 @@ func react_to_save_file_update() -> void:
 	refresh_puzzles_completed();
 	
 var actions = ["ui_accept", "ui_cancel", "escape", "ui_left", "ui_right", "ui_up", "ui_down",
-"character_undo", "meta_undo", "meta_redo", "character_unwin", "restart",
+"meta_undo", "meta_redo", "restart",
 "mute",
 "toggle_replay", "start_replay", "start_saved_replay",
 "speedup_replay", "slowdown_replay", "replay_pause", "replay_back1", "replay_fwd1"];
@@ -981,9 +933,9 @@ func ready_map() -> void:
 	for goal in goals:
 		goal.queue_free();
 	goals.clear();
-	for hole_sprite in hole_sprites.values():
-		hole_sprite.queue_free();
-	hole_sprites.clear();
+	#for hole_sprite in hole_sprites.values():
+	#	hole_sprite.queue_free();
+	#hole_sprites.clear();
 	for whatever in underterrainfolder.get_children():
 		whatever.queue_free();
 	for whatever in actorsfolder.get_children():
@@ -992,10 +944,6 @@ func ready_map() -> void:
 		whatever.queue_free();
 	for whatever in overactorsparticles.get_children():
 		whatever.queue_free();
-	red_turn = 0;
-	red_undo_buffer.clear();
-	blue_turn = 0;
-	blue_undo_buffer.clear();
 	meta_turn = 0;
 	meta_undo_buffer.clear();
 	user_replay = "";
@@ -1022,28 +970,14 @@ func ready_map() -> void:
 			insight_level_scene = load(insight_path);
 
 	calculate_map_size();
-	make_shadows();
 	make_actors();
-	
-	initialize_starbar();
 	
 	finish_animations(Chrono.TIMELESS);
 	update_info_labels();
 	check_won(Chrono.TIMELESS);
 	
-	ready_tutorial();
 	update_level_label();
 	intro_hop();
-
-func initialize_starbar() -> void:
-	if (ready_done):
-		var num_stars = 0;
-		for actor in actors:
-			if actor.is_star:
-				num_stars += 1;
-		starbar.initialize(num_stars);
-	else:
-		call_deferred("initialize_starbar");
 
 var first_intro = false;
 
@@ -1061,19 +995,6 @@ func intro_hop() -> void:
 	else:
 		add_to_animation_server(player, [Anim.intro, 0.5]);
 
-func tutorial_complete() -> void:
-	show_button(virtualbuttons.get_node("Verbs/UndoButton"))
-	show_button(virtualbuttons.get_node("Verbs/UnwinButton"))
-	show_button(virtualbuttons.get_node("Verbs/MetaUndoButton"))
-	z_shown = true;
-	x_shown = true;
-	c_shown = true;
-	z_used = true;
-	x_used = true;
-	c_used = true;
-	tutoriallabel.visible = false;
-	metainfolabel.visible = true;
-
 func show_button(button: Button) -> void:
 	if (!button.visible):
 		button.visible = true;
@@ -1082,34 +1003,6 @@ func show_button(button: Button) -> void:
 		button.add_child(sparklespawner);
 		sparklespawner.color = button.get_child(0).get_color("font_color");
 
-func ready_tutorial() -> void:
-	if (tutoriallabel.visible):
-		tutoriallabel.bbcode_text = "";
-		if z_shown and !z_used:
-			tutoriallabel.bbcode_text += human_readable_input("character_undo") + ": [color=#CF6A4F]Undo[/color]\n"
-		if x_shown and !x_used:
-			tutoriallabel.bbcode_text += human_readable_input("character_unwin") + ": [color=#E0B94A]Unwin[/color]\n"
-		if c_shown and !c_used:
-			tutoriallabel.bbcode_text += "\n" + human_readable_input("meta_undo") + ": [color=#B2AF5C]Really Undo[/color]"
-		
-func translate_tutorial_inputs() -> void:
-	if tutoriallabel.visible:
-		pass
-#		if (meta_redo_inputs != "" and (level_number == 6 or level_number == 7)):
-#			tutoriallabel.bbcode_text = "$META-UNDO: [color=#A9F05F]Undo[/color]\n$RESTART: Restart\n$META-REDO: [color=#A9F05F]Redo[/color]";
-#			tutoriallabel.bbcode_text = "[center]" + tutoriallabel.bbcode_text + "[/center]";
-#
-#		if using_controller:
-#			tutoriallabel.bbcode_text = tutoriallabel.bbcode_text.replace("$MOVE", "D-Pad/Either Stick");
-#		else:
-#			tutoriallabel.bbcode_text = tutoriallabel.bbcode_text.replace("$MOVE", "Arrows");
-#		tutoriallabel.bbcode_text = tutoriallabel.bbcode_text.replace("$SWAP", human_readable_input("character_switch"));
-#		tutoriallabel.bbcode_text = tutoriallabel.bbcode_text.replace("$UNDO", human_readable_input("character_undo"));
-#		tutoriallabel.bbcode_text = tutoriallabel.bbcode_text.replace("$META-UNDO", human_readable_input("meta_undo"));
-#		tutoriallabel.bbcode_text = tutoriallabel.bbcode_text.replace("$META-REDO", human_readable_input("meta_redo"));
-#		tutoriallabel.bbcode_text = tutoriallabel.bbcode_text.replace("$RESTART", human_readable_input("restart"));
-#		tutoriallabel.bbcode_text = tutoriallabel.bbcode_text.replace("$TOGGLE-REPLAY", human_readable_input("toggle_replay"));
-	
 var controller_hrns = [
 	"Bottom Face Button",
 	"Right Face Button",
@@ -1176,53 +1069,6 @@ func any_layer_has_this_tile(id: int) -> bool:
 			return true;
 	return false;
 
-func make_shadows() -> void:
-	# it'd probably be smarter to come up with some sort of like, tilemap, but sprites to be quick-and-dirty
-	# and if it's a problem I'll fix it later
-	var floor_layers = get_used_cells_by_id_all_layers(Tiles.Floor);
-	for i in range(floor_layers.size()):
-		var layer = floor_layers[i];
-		for tile in layer:
-			var wall_to_left = terrain_in_tile(tile + Vector2.LEFT).has(Tiles.Wall);
-			var wall_to_north = terrain_in_tile(tile + Vector2.UP).has(Tiles.Wall);
-			var wall_to_nw = terrain_in_tile(tile + Vector2.UP + Vector2.LEFT).has(Tiles.Wall);
-			var bitfield = 0;
-			if (wall_to_left):
-				bitfield += 1;
-			if (wall_to_north):
-				bitfield += 2;
-			if (wall_to_nw):
-				bitfield += 4;
-			var frame = 0;
-			match bitfield:
-				0:
-					frame = -1;
-				1:
-					frame = 6;
-				2:
-					frame = 7;
-				3:
-					frame = 2;
-				4:
-					frame = 4;
-				5:
-					frame = 3;
-				6:
-					frame = 1;
-				7:
-					frame = 0;
-			if (frame >= 0):
-				var sprite = Sprite.new();
-				terrain_layers[i].add_child(sprite);
-				sprite.texture = preload("res://assets/wall_shadow.png");
-				sprite.centered = false;
-				sprite.hframes = 3;
-				sprite.vframes = 3;
-				sprite.frame = frame;
-				sprite.position = tile * cell_size;
-				if (i == terrain_layers.size() - 1):
-					terrain_layers[i].move_child(sprite, terrain_layers[i-1].get_index());
-
 func make_actors() -> void:
 	voidlike_puzzle = false;
 	
@@ -1230,12 +1076,7 @@ func make_actors() -> void:
 	find_goals();
 	
 	var where_are_actors = {};
-	
-	#stars first, so they draw behind the player on the same layer
-	extract_actors(Tiles.Star, Actor.Name.Star, Heaviness.CRYSTAL, Strength.HEAVY, true);
-	extract_actors(Tiles.DarkStar, Actor.Name.DarkStar, Heaviness.CRYSTAL, Strength.HEAVY, true);
-	extract_actors(Tiles.CrackedStar, Actor.Name.CrackedStar, Heaviness.CRYSTAL, Strength.HEAVY, true);
-	
+
 	# find the player
 	player = null;
 	var layers_tiles = get_used_cells_by_id_all_layers(Tiles.Player);
@@ -1265,10 +1106,8 @@ func make_actors() -> void:
 		move_actor_to(actor, where_are_actors[actor], Chrono.TIMELESS, false, false);
 	
 	# crates
-	extract_actors(Tiles.DirtBlock, Actor.Name.DirtBlock, Heaviness.IRON, Strength.WOODEN, false);
-	extract_actors(Tiles.IceBlock, Actor.Name.IceBlock, Heaviness.IRON, Strength.WOODEN, false);
-	
-	find_colours();
+	extract_actors(Tiles.StoneBlock, Actor.Name.StoneBlock, Heaviness.IRON, Strength.WOODEN, false);
+	extract_actors(Tiles.WonderBlock, Actor.Name.WonderBlock, Heaviness.IRON, Strength.WOODEN, false);
 	
 func find_goals() -> void:
 	var layers = get_used_cells_by_id_all_layers(Tiles.Win);
@@ -1282,7 +1121,6 @@ func find_goals() -> void:
 			goal.centered = true;
 			goal.pos = tile;
 			goal.position = terrainmap.map_to_world(goal.pos) + Vector2(cell_size/2, cell_size/2);
-			goal.starbar = starbar;
 			goals.append(goal);
 			add_actor_or_goal_at_appropriate_layer(goal, i);
 			goal.update_graphics();
@@ -1306,23 +1144,8 @@ func extract_actors(id: int, actorname: int, heaviness: int, strength: int, is_s
 			var actor = make_actor(actorname, tile, false, i);
 			actor.heaviness = heaviness;
 			actor.strength = strength;
-			actor.is_star = is_star;
 			actor.is_character = false;
 			actor.update_graphics();
-
-func find_colours() -> void:
-	var layers_tiles = get_used_cells_by_id_all_layers(Tiles.GreenAura);
-	for i in range(layers_tiles.size()):
-		var tiles = layers_tiles[i];
-		for tile in tiles:
-			var found = false;
-			# get first actor with the same pos and native colour and change their time_colour
-			for actor in actors:
-				if actor.pos == tile and !actor.is_green:
-					actor.is_green = true;
-					actor.update_time_bubble();
-					terrain_layers[i].set_cellv(tile, -1);
-					break;
 
 func calculate_map_size() -> void:
 	map_x_max = 0;
@@ -1552,20 +1375,6 @@ is_move: bool = false, can_push: bool = true) -> int:
 		
 		add_undo_event([Undo.move, actor, dir, was_push],
 		chrono_for_maybe_green_actor(actor, chrono));
-		
-		# green aura
-		
-		if (!actor.is_green and chrono < Chrono.META_UNDO):
-			var terrain = terrain_in_tile(actor.pos);
-			for i in range(terrain.size()):
-				var tile = terrain[i];
-				if (tile == Tiles.GreenAura):
-					actor.is_green = true;
-					add_undo_event([Undo.time_bubble, actor],
-						chrono_for_maybe_green_actor(actor, Chrono.CHAR_UNDO));
-					add_to_animation_server(actor, [Anim.time_bubble]);
-					maybe_change_terrain(actor, actor.pos, i, false, Greenness.Green, chrono, -1);
-					break;
 
 		#do sound effects for special moves and their undoes
 		if (was_push and is_retro):
@@ -1590,14 +1399,6 @@ is_move: bool = false, can_push: bool = true) -> int:
 	
 	return success;
 
-func adjust_turn(is_winunwin: bool, amount: int, chrono : int) -> void:
-	if (is_winunwin):
-		add_undo_event([Undo.blue_turn, amount], chrono, amount > 0);
-		blue_turn += amount;
-	else:
-		add_undo_event([Undo.red_turn, amount], chrono, is_winunwin);
-		red_turn += amount;
-		
 func actors_in_tile(pos: Vector2) -> Array:
 	var result = [];
 	for actor in actors:
@@ -1807,14 +1608,14 @@ func end_lose() -> void:
 		won_fade_started = false;
 		player.modulate.a = 1;
 
-func add_hole_sprite(actor: ActorBase, layer: int) -> void:
-	var sprite = Sprite.new();
-	hole_sprites[actor.pos] = sprite;
-	sprite.position = actor.pos*cell_size + Vector2(cell_size/2, cell_size/2);
-	sprite.texture = preload("res://assets/pit_filling.png");
-	sprite.hframes = 5;
-	sprite.vframes = 3;
-	add_actor_or_goal_at_appropriate_layer_at_back(sprite, layer);
+#func add_hole_sprite(actor: ActorBase, layer: int) -> void:
+#	var sprite = Sprite.new();
+#	hole_sprites[actor.pos] = sprite;
+#	sprite.position = actor.pos*cell_size + Vector2(cell_size/2, cell_size/2);
+#	sprite.texture = preload("res://assets/pit_filling.png");
+#	sprite.hframes = 5;
+#	sprite.vframes = 3;
+#	add_actor_or_goal_at_appropriate_layer_at_back(sprite, layer);
 
 func set_actor_var(actor: ActorBase, prop: String, value, chrono: int,
 is_retro: bool = false, _retro_old_value = null) -> void:
@@ -1825,20 +1626,7 @@ is_retro: bool = false, _retro_old_value = null) -> void:
 		return
 	actor.set(prop, value);
 	
-	var is_winunwin = false;
 	if (prop == "broken"):
-		# for now, uncollecting a star is not is_winunwin, because there's no way to non-retro do it.
-		# TODO: I think we actually check is_retro, but I need star revival to care about this first
-		if (actor.is_star):
-			if (value == true):
-				starbar.star_get();
-				is_winunwin = true;
-			else:
-				starbar.star_unget();
-			if (actor.actorname == Actor.Name.CrackedStar):
-				if chrono == Chrono.MOVE:
-					chrono = Chrono.CHAR_UNDO;
-					is_winunwin = false;
 		if actor.post_mortem == Actor.PostMortems.Collect:
 			if (value == true):
 				for goal in goals:
@@ -1856,13 +1644,13 @@ is_retro: bool = false, _retro_old_value = null) -> void:
 				add_to_animation_server(actor, [Anim.fall]);
 			else:
 				add_to_animation_server(actor, [Anim.sfx, "unfall"]);
-		elif actor.post_mortem == Actor.PostMortems.Melt:
+		elif actor.post_mortem == Actor.PostMortems.Frag:
 			if (value == true):
 				add_to_animation_server(actor, [Anim.melt]);
 			else:
 				add_to_animation_server(actor, [Anim.unmelt]);
 	
-	add_undo_event([Undo.set_actor_var, actor, prop, old_value, value], chrono_for_maybe_green_actor(actor, chrono), is_winunwin);
+	add_undo_event([Undo.set_actor_var, actor, prop, old_value, value], chrono_for_maybe_green_actor(actor, chrono));
 	
 	add_to_animation_server(actor, [Anim.set_next_texture, actor.get_next_texture(), actor.facing_dir])
 			
@@ -1870,26 +1658,11 @@ is_retro: bool = false, _retro_old_value = null) -> void:
 #	if (prop == "broken"):
 #		add_to_animation_server(actor, [Anim.stall, 0.14]);
 
-func add_undo_event(event: Array, chrono: int = Chrono.MOVE, is_winunwin: bool = false) -> void:
+func add_undo_event(event: Array, chrono: int = Chrono.MOVE) -> void:
 	#if (debug_prints and chrono < Chrono.META_UNDO):
 	# print("add_undo_event", " ", event, " ", chrono, " ", is_winunwin);
-	
-	if is_winunwin:
-		if chrono >= Chrono.META_UNDO:
-			pass
-		else:
-			while (blue_undo_buffer.size() <= blue_turn):
-				blue_undo_buffer.append([]);
-			blue_undo_buffer[blue_turn].push_front(event);
-			add_undo_event([Undo.blue_undo_event_add, blue_turn], Chrono.CHAR_UNDO);
-	else:
-		if (chrono == Chrono.MOVE):
-			while (red_undo_buffer.size() <= red_turn):
-				red_undo_buffer.append([]);
-			red_undo_buffer[red_turn].push_front(event);
-			add_undo_event([Undo.red_undo_event_add, red_turn], Chrono.CHAR_UNDO);
 
-	if (chrono <= Chrono.CHAR_UNDO):
+	if (chrono <= Chrono.MOVE):
 		while (meta_undo_buffer.size() <= meta_turn):
 			meta_undo_buffer.append([]);
 		meta_undo_buffer[meta_turn].push_front(event);
@@ -1905,92 +1678,6 @@ func meta_undo_replay() -> bool:
 	else:
 		meta_redo_inputs += user_replay[user_replay.length() - 1]
 		user_replay = user_replay.left(user_replay.length() - 1);
-	return true;
-
-func character_undo(is_silent: bool = false) -> bool:
-	var chrono = Chrono.CHAR_UNDO;
-	if (won or lost): return false;
-	# check if we can undo
-	if (red_turn <= 0):
-		if !is_silent:
-			play_sound("bump");
-		return false;
-	finish_animations(Chrono.CHAR_UNDO);
-	#the undo itself
-	var events = red_undo_buffer.pop_at(red_turn - 1);
-	for event in events:
-		undo_one_event(event, chrono);
-		add_undo_event([Undo.red_undo_event_remove, red_turn, event], Chrono.CHAR_UNDO);
-	
-	time_passes(chrono);
-	
-	append_replay("z");
-	
-	if (z_shown):
-		z_used = true;
-	
-	if anything_happened_char(false):
-		adjust_turn(false, 1, Chrono.MOVE);
-	if anything_happened_char(true):
-		adjust_turn(true, 1, Chrono.MOVE);
-	
-	adjust_meta_turn(1, chrono);
-	
-	if (!is_silent):
-		play_sound("undostrong");
-		if (!currently_fast_replay()):
-			undo_effect_strength = 0.12;
-			undo_effect_per_second = undo_effect_strength*(1/0.4);
-			undo_effect_color = red_color;
-	return true;
-
-func character_unwin(is_silent: bool = false) -> bool:
-	var chrono = Chrono.CHAR_UNDO;
-	if (won or lost): return false;
-	# check if we can unwin
-	if (blue_turn <= 0):
-		if !is_silent:
-			play_sound("bump");
-		return false;
-		
-	# check for dark stars
-	for event in blue_undo_buffer[blue_turn - 1]:
-		if event[0] == Undo.set_actor_var and event[1].actorname == Actor.Name.DarkStar:
-			floating_text("Cannot Unwin a Dark Star.");
-			if !is_silent:
-				play_sound("bump");
-			return false;
-		
-	finish_animations(Chrono.CHAR_UNDO);
-	#the unwin itself
-	var events = blue_undo_buffer.pop_at(blue_turn - 1);
-	for event in events:
-		undo_one_event(event, chrono);
-		add_undo_event([Undo.blue_undo_event_remove, blue_turn, event], Chrono.CHAR_UNDO);
-	
-	time_passes(chrono);
-
-	append_replay("x");
-	
-	if (x_shown):
-		x_used = true;
-		if (!c_shown):
-			c_shown = true;
-			show_button(virtualbuttons.get_node("Verbs/MetaUndoButton"));
-	
-	if anything_happened_char(false):
-		adjust_turn(false, 1, Chrono.MOVE);
-	if anything_happened_char(true):
-		adjust_turn(true, 1, Chrono.MOVE);
-	
-	adjust_meta_turn(1, chrono);
-	
-	if (!is_silent):
-		play_sound("undostrong");
-		if (!currently_fast_replay()):
-			undo_effect_strength = 0.12;
-			undo_effect_per_second = undo_effect_strength*(1/0.4);
-			undo_effect_color = blue_color;
 	return true;
 
 func finish_animations(chrono: int) -> void:
@@ -2024,14 +1711,12 @@ func finish_animations(chrono: int) -> void:
 	for actor in actors:
 		actor.position = terrainmap.map_to_world(actor.pos);
 		actor.update_graphics();
-	for goal in goals:
-		goal.calculate_speed();
 	animation_server.clear();
 	animation_substep = 0;
 	
-	for hole_sprite in hole_sprites.values():
-		hole_sprite.queue_free();
-	hole_sprites.clear();
+	#for hole_sprite in hole_sprites.values():
+	#	hole_sprite.queue_free();
+	#hole_sprites.clear();
 
 func adjust_meta_turn(amount: int, chrono: int) -> void:
 	meta_turn += amount;
@@ -2040,8 +1725,6 @@ func adjust_meta_turn(amount: int, chrono: int) -> void:
 	if (won or lost or amount >= 0):
 		check_won(chrono);
 	
-var seen_goal : bool = false;
-	
 func check_won(chrono: int) -> void:
 	won = false;
 	var locked = false;
@@ -2049,18 +1732,8 @@ func check_won(chrono: int) -> void:
 	if (lost):
 		return
 	Shade.on = false;
-	
-	#check stars
-	for actor in actors:
-		if actor.is_star and !actor.broken:
-			locked = true;
-			break;
-	
+
 	var on_goal = !player.broken and terrain_in_tile(player.pos, player, chrono).has(Tiles.Win);
-	
-	if (locked and on_goal and !is_custom and !doing_replay and !seen_goal):
-		floating_text("Collect more Stars (%d/%d)" % [starbar.collected, starbar.collected_max] )
-		seen_goal = true;
 	
 	if (!locked and on_goal):
 		won = true;
@@ -2124,7 +1797,6 @@ func check_won(chrono: int) -> void:
 		elif doing_replay:
 			winlabel.change_text("You have won!\n\n[" + human_readable_input("ui_accept", 1) + "]: " + then)
 		won_fade_started = false;
-		tutoriallabel.visible = false;
 		call_deferred("adjust_winlabel_deferred");
 	elif won_fade_started:
 		won_fade_started = false;
@@ -2181,34 +1853,9 @@ func undo_one_event(event: Array, chrono : int) -> void:
 			add_to_animation_server(actor, [Anim.sfx, sfx]);
 	
 	match event[0]:
-		Undo.red_turn:
-			adjust_turn(false, -event[1], chrono);
-		Undo.blue_turn:
-			adjust_turn(true, -event[1], chrono);
-		Undo.red_undo_event_add:
-			while (red_undo_buffer.size() <= event[1]):
-				red_undo_buffer.append([]);
-			red_undo_buffer[event[1]].pop_front();
-		Undo.blue_undo_event_add:
-			while (blue_undo_buffer.size() <= event[1]):
-				blue_undo_buffer.append([]);
-			blue_undo_buffer[event[1]].pop_front();
-		Undo.red_undo_event_remove:
-			# meta undo an undo creates a char undo event but not a meta undo event, it's special!
-			while (red_undo_buffer.size() <= event[1]):
-				red_undo_buffer.append([]);
-			red_undo_buffer[event[1]].push_front(event[2]);
-		Undo.blue_undo_event_remove:
-			while (blue_undo_buffer.size() <= event[1]):
-				blue_undo_buffer.append([]);
-			blue_undo_buffer[event[1]].push_front(event[2]);
 		Undo.animation_substep:
 			# don't need to emit a new event as meta undoing and beyond is a teleport
 			animation_substep += 1;
-		Undo.time_bubble:
-			var actor = event[1];
-			actor.is_green = false;
-			actor.update_time_bubble();
 
 func meta_undo_a_restart() -> bool:
 	var meta_undo_a_restart_type = 2;
@@ -2260,14 +1907,6 @@ func meta_undo(is_silent: bool = false) -> bool:
 	
 	end_lose();
 	finish_animations(Chrono.MOVE);
-	
-	if (!c_shown):
-		c_shown = true;
-		show_button(virtualbuttons.get_node("Verbs/MetaUndoButton"));
-	c_used = true;
-	if (z_used and x_used):
-		tutoriallabel.visible = false;
-		metainfolabel.visible = true;
 
 	var events = meta_undo_buffer.pop_back();
 	for event in events:
@@ -2276,7 +1915,6 @@ func meta_undo(is_silent: bool = false) -> bool:
 		cut_sound();
 		play_sound("metaundo");
 	just_did_meta();
-	starbar.finish_animations();
 	adjust_meta_turn(-1, Chrono.META_UNDO);
 	var result = meta_undo_replay();
 	preserving_meta_redo_inputs = false;
@@ -2323,10 +1961,6 @@ func do_one_letter(replay_char: String) -> void:
 			character_move(Vector2.DOWN);
 		"d":
 			character_move(Vector2.RIGHT);
-		"z":
-			character_undo();
-		"x":
-			character_unwin();
 		"c":
 			meta_undo();
 
@@ -2530,43 +2164,13 @@ func character_move(dir: Vector2) -> bool:
 
 	if (result != Success.No):
 		time_passes(Chrono.MOVE);
-		if anything_happened_char(false):
-			adjust_turn(false, 1, Chrono.MOVE);
-		if anything_happened_char(true):
-			adjust_turn(true, 1, Chrono.MOVE);
 	if (result != Success.No):
 		append_replay(chr);
 	if (result != Success.Yes):
 		play_sound("bump")
 	if (result != Success.No):
-		if (!z_shown):
-			show_button(virtualbuttons.get_node("Verbs/UndoButton"));
-			z_shown = true;
 		adjust_meta_turn(1, Chrono.MOVE);
 	return result != Success.No;
-
-func anything_happened_char(is_winunwin: bool, destructive: bool = true) -> bool:
-	if (!is_winunwin):
-		var turn = red_turn;
-		while (red_undo_buffer.size() <= turn):
-			red_undo_buffer.append([]);
-		for event in red_undo_buffer[turn]:
-			if event[0] != Undo.animation_substep:
-				return true;
-		#clear out now unnecessary animation_substeps if nothing else happened
-		if (destructive):
-			red_undo_buffer.pop_at(turn);
-	else:
-		var turn = blue_turn;
-		while (blue_undo_buffer.size() <= turn):
-			blue_undo_buffer.append([]);
-		for event in blue_undo_buffer[turn]:
-			if event[0] != Undo.animation_substep:
-				return true;
-		#clear out now unnecessary animation_substeps if nothing else happened
-		if (destructive):
-			blue_undo_buffer.pop_at(turn);
-	return false;
 
 func time_passes(chrono: int) -> void:
 	animation_substep(chrono);
@@ -2581,7 +2185,7 @@ func time_passes(chrono: int) -> void:
 				var tile = terrain[i];
 				if tile == Tiles.Hole:
 					actor.post_mortem = Actor.PostMortems.Fall;
-					add_hole_sprite(actor, i);
+					#add_hole_sprite(actor, i);
 					set_actor_var(actor, "broken", true, chrono);
 					maybe_change_terrain(actor, actor.pos, i, false, Greenness.Mundane, chrono, -1);
 					break;
@@ -2599,10 +2203,6 @@ func time_passes(chrono: int) -> void:
 				# 'it's a blue event' will be handled inside of set_actor_var.
 				actor.post_mortem = Actor.PostMortems.Collect;
 				set_actor_var(actor, "broken", true, chrono);
-				
-				if (!x_shown):
-					x_shown = true;
-					show_button(virtualbuttons.get_node("Verbs/UnwinButton"));
 				
 				# Melt all surrounding ice.
 				# Notably this happens at Chrono.MOVE speed so it can't be 'forgotten'.
@@ -2652,7 +2252,7 @@ func authors_replay() -> void:
 		voidlike_puzzle = true;
 	
 func toggle_replay() -> void:
-	tutorial_complete();
+	tutorial_complete = true;
 	meta_undo_a_restart_mode = false;
 	unit_test_mode = false;
 	if (doing_replay):
@@ -2857,58 +2457,17 @@ func update_info_labels() -> void:
 		virtualbuttons.get_node("Dirs/DownButton"),
 		virtualbuttons.get_node("Dirs/RightButton"),
 		virtualbuttons.get_node("Dirs/UpButton")];
-		var undo_button = virtualbuttons.get_node("Verbs/UndoButton");
-		var unwin_button = virtualbuttons.get_node("Verbs/UnwinButton");
-		if (red_turn == 0):
-			undo_button.modulate = Color(0.5, 0.5, 0.5, 1);
-		else:
-			undo_button.modulate = Color(1.0, 1.0, 1.0, 1);
-		if (blue_turn == 0):
-			unwin_button.modulate = Color(0.5, 0.5, 0.5, 1);
-		else:
-			unwin_button.modulate = Color(1.0, 1.0, 1.0, 1);
 		if player.broken:
 			for button in dirs:
 				button.modulate = Color(0.5, 0.5, 0.5, 1);
 		else:
 			for button in dirs:
 				button.modulate = Color(1.0, 1.0, 1.0, 1);
-#		if (heavy_selected):
-#			for button in dirs:
-#				button.get_node("Label").add_color_override("font_color", Color("#ff7459"));
-#				do_all_stylebox_overrides(button, preload("res://heavy_styleboxtexture.tres"));
-#				if (heavy_actor.broken or heavy_turn >= heavy_max_moves):
-#					button.modulate = Color(0.5, 0.5, 0.5, 1);
-#				else:
-#					button.modulate = Color(1, 1, 1, 1);
-#			undo_button.get_node("Label").add_color_override("font_color", Color("#ff7459"));
-#			do_all_stylebox_overrides(undo_button, preload("res://heavy_styleboxtexture.tres"));
-#			if (heavy_turn == 0):
-#				undo_button.modulate = Color(0.5, 0.5, 0.5, 1);
-#			else:
-#				undo_button.modulate = Color(1, 1, 1, 1);
-#			swap_button.get_node("Label").add_color_override("font_color", Color("#7fc9ff"));
-#			do_all_stylebox_overrides(swap_button, preload("res://light_styleboxtexture.tres"));
-#		else:
-#			for button in dirs:
-#				button.get_node("Label").add_color_override("font_color", Color("#7fc9ff"));
-#				do_all_stylebox_overrides(button, preload("res://light_styleboxtexture.tres"));
-#				if (light_actor.broken or light_turn >= light_max_moves):
-#					button.modulate = Color(0.5, 0.5, 0.5, 1);
-#				else:
-#					button.modulate = Color(1, 1, 1, 1);
-#			undo_button.get_node("Label").add_color_override("font_color", Color("#7fc9ff"));
-#			do_all_stylebox_overrides(undo_button, preload("res://light_styleboxtexture.tres"));
-#			if (light_turn == 0):
-#				undo_button.modulate = Color(0.5, 0.5, 0.5, 1);
-#			else:
-#				undo_button.modulate = Color(1, 1, 1, 1);
-#			swap_button.get_node("Label").add_color_override("font_color", Color("#ff7459"));
-#			do_all_stylebox_overrides(swap_button, preload("res://heavy_styleboxtexture.tres"));
 	
 	metaredobutton.visible = meta_redo_inputs != "";
 
-	metainfolabel.text = "Turn: " + str(red_turn) + " | Inputs: " + str(meta_turn);
+	# TODO: need the +1mil for tutorial_complete = false here
+	metainfolabel.text = "History: " + str(history_moves.length()) + " | Inputs: " + str(meta_turn);
 	
 	if (doing_replay):
 		replaybuttons.visible = true;
@@ -2923,9 +2482,6 @@ func update_info_labels() -> void:
 			replayspeedlabel.text = "Speed: " + "%0.2f" % (replay_interval) + "s";
 	else:
 		replaybuttons.visible = false;
-	
-	if (!is_custom):
-		ready_tutorial();
 
 func animation_substep(chrono: int) -> void:
 	animation_substep += 1;
@@ -3316,7 +2872,7 @@ func load_custom_level(custom: String) -> void:
 	if level == null:
 		return;
 	
-	tutorial_complete();
+	tutorial_complete = true;
 	
 	is_custom = true;
 	in_insight_level = false;
@@ -3503,8 +3059,6 @@ func _process(delta: float) -> void:
 				InputMap.action_set_deadzone(dir, held);
 			else:
 				InputMap.action_set_deadzone(dir, normal);
-				
-		#tutoriallabel.text = str(Input.get_action_raw_strength("ui_up"));
 			
 	sounds_played_this_frame.clear();
 	
@@ -3550,26 +3104,6 @@ func _process(delta: float) -> void:
 	if (fanfare_duck_db < 0):
 		fanfare_duck_db = 0;
 	music_speaker.volume_db = music_speaker.volume_db - fanfare_duck_db;
-	
-	#starticipation - most recently won star(s) sparkle subtly
-	starticipation_timer += delta;
-	if (starticipation_timer > starticipation_timer_max):
-		starticipation_timer -= starticipation_timer_max;
-		if (blue_turn > 0):
-			var buffer = blue_undo_buffer[blue_turn - 1];
-			for event in buffer:
-				if event[0] == Undo.set_actor_var:
-					var star = event[1];
-					var c = Color("A7A79E");
-					# one sparkle, slightly different position logic
-					var sprite = Sprite.new();
-					sprite.set_script(preload("res://FadingSprite.gd"));
-					sprite.texture = preload("res://assets/Sparkle.png")
-					sprite.position = star.offset + Vector2(rng.randf_range(-6, 6), rng.randf_range(-6, 6));
-					sprite.centered = true;
-					sprite.scale = Vector2(0.25, 0.25);
-					sprite.modulate = c;
-					star.add_child(sprite)
 	
 	if (sky_timer < sky_timer_max):
 		sky_timer += delta;
@@ -3680,10 +3214,6 @@ func _process(delta: float) -> void:
 				paste_level(clipboard);
 			else:
 				start_specific_replay(clipboard);
-		elif (pressed_or_key_repeated("character_undo")):
-			end_replay();
-			character_undo();
-			update_info_labels();
 		elif (pressed_or_key_repeated("meta_undo")):
 			end_replay();
 			meta_undo();
@@ -3696,10 +3226,6 @@ func _process(delta: float) -> void:
 			# must be kept in sync with Menu "restart"
 			end_replay();
 			restart();
-			update_info_labels();
-		elif (pressed_or_key_repeated("character_unwin")):
-			end_replay();
-			character_unwin();
 			update_info_labels();
 		elif (Input.is_action_just_pressed("ui_accept")): #so enter can open the menu but only if it's closed
 			#end_replay(); #done in escape();
