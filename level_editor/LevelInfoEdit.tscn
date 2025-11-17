@@ -11,7 +11,7 @@ script = ExtResource( 1 )
 margin_left = 145.0
 margin_top = 79.0
 margin_right = 368.0
-margin_bottom = 220.0
+margin_bottom = 252.0
 rect_pivot_offset = Vector2( 129, 100 )
 theme = ExtResource( 3 )
 custom_styles/normal = ExtResource( 2 )
@@ -20,16 +20,16 @@ align = 1
 
 [node name="OkButton" type="Button" parent="Holder"]
 margin_left = 56.0
-margin_top = 121.0
+margin_top = 152.0
 margin_right = 167.0
-margin_bottom = 136.0
+margin_bottom = 167.0
 text = "Ok"
 
 [node name="Label7" type="Label" parent="Holder"]
 margin_left = 80.0
-margin_top = 103.0
+margin_top = 134.0
 margin_right = 145.0
-margin_bottom = 114.0
+margin_bottom = 145.0
 text = "Sky Colour"
 
 [node name="Label4" type="Label" parent="Holder"]
@@ -51,6 +51,7 @@ margin_left = 151.0
 margin_top = 77.0
 margin_right = 214.0
 margin_bottom = 88.0
+rect_pivot_offset = Vector2( -24, 8 )
 text = "Level Replay"
 
 [node name="LevelName" type="TextEdit" parent="Holder"]
@@ -70,13 +71,28 @@ margin_left = 8.0
 margin_top = 70.0
 margin_right = 145.0
 margin_bottom = 97.0
-rect_pivot_offset = Vector2( -345, 60 )
+rect_pivot_offset = Vector2( 119, 15 )
+
+[node name="Label8" type="Label" parent="Holder"]
+margin_left = 151.0
+margin_top = 103.0
+margin_right = 214.0
+margin_bottom = 114.0
+rect_pivot_offset = Vector2( -24, 8 )
+text = "Door Depths"
+
+[node name="DoorDepths" type="TextEdit" parent="Holder"]
+margin_left = 8.0
+margin_top = 97.0
+margin_right = 145.0
+margin_bottom = 124.0
+rect_pivot_offset = Vector2( 119, 15 )
 
 [node name="SkyColourButton" type="ColorPickerButton" parent="Holder"]
 margin_left = 8.0
-margin_top = 99.0
+margin_top = 130.0
 margin_right = 142.0
-margin_bottom = 139.0
+margin_bottom = 170.0
 rect_scale = Vector2( 0.5, 0.5 )
 
 [node name="Pointer" type="Sprite" parent="Holder"]

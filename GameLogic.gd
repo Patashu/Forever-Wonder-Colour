@@ -156,6 +156,11 @@ var meta_undo_buffer : Array = [];
 # history!
 var history_moves : String = "";
 var tutorial_complete : bool = false;
+var current_depth : int = 0;
+var is_resimulating : bool = false;
+var resimulation_turn : int = 0;
+var total_iterations : int = 0;
+var door_depths : String = "";
 
 # for afterimages
 var afterimage_server : Dictionary = {}
@@ -946,6 +951,11 @@ func ready_map() -> void:
 		whatever.queue_free();
 	meta_turn = 0;
 	meta_undo_buffer.clear();
+	history_moves = "";
+	current_depth = 0;
+	total_iterations = 0;
+	is_resimulating = false;
+	resimulation_turn = 0;
 	user_replay = "";
 	meta_redo_inputs = "";
 	preserving_meta_redo_inputs = false;
@@ -1319,24 +1329,11 @@ func make_actor(actorname: int, pos: Vector2, is_character: bool, i: int, chrono
 		print("TODO")
 	return actor;
 
-var wants_to_move_again: Dictionary = {};
-
 func move_actor_initiate(actor: Actor, dir: Vector2, chrono: int, hypothetical: bool,
 is_retro: bool = false, pushers_list: Array = [],  was_push = false,
 is_move: bool = false, can_push: bool = true) -> int:
 	var result = move_actor_to(actor, actor.pos + dir, chrono, hypothetical, is_retro,
 	pushers_list, was_push, is_move, can_push);
-	
-	# Ice blocks that successfully non-retro non-hypothetical move slide.
-	while (wants_to_move_again.size() > 0):
-		animation_substep(chrono);
-		var temp = wants_to_move_again.duplicate();
-		wants_to_move_again.clear();
-		for w in temp:
-			# slide and unslide sfx - it's conveniently its own reverse
-			add_to_animation_server(w, [Anim.sfx, "slide"]);
-			add_undo_event([Undo.sfx, w, "slide"], chrono);
-			var r = move_actor_relative(w, temp[w], chrono, hypothetical, false, pushers_list);
 			
 	return result;
 
@@ -1346,11 +1343,6 @@ is_move: bool = false, can_push: bool = true) -> int:
 	var result = move_actor_to(actor, actor.pos + dir, chrono, hypothetical, is_retro,
 	pushers_list, was_push, is_move, can_push);
 	
-	# Ice blocks that successfully non-retro non-hypothetical move slide (when move_actor_initiate next ticks).
-	if (!is_retro and !hypothetical and result == Success.Yes and actor.actorname == Actor.Name.IceBlock):
-		var terrain = terrain_in_tile(actor.pos, actor, chrono);
-		if terrain.has(Tiles.Floor) and !terrain.has(Tiles.Hole) and !terrain.has(Tiles.BottomlessPit):
-			wants_to_move_again[actor] = dir;
 	return result;
 
 func move_actor_to(actor: Actor, pos: Vector2, chrono: int, hypothetical: bool,
@@ -1391,7 +1383,7 @@ is_move: bool = false, can_push: bool = true) -> int:
 	elif (success != Success.Yes):
 		if (!hypothetical):
 			# involuntary bump sfx (atm this plays when an ice block slide ends)
-			if (actor.actorname == Actor.Name.IceBlock or is_retro):
+			if (is_retro):
 				add_to_animation_server(actor, [Anim.sfx, "involuntarybumpother"], false);
 		# bump animation always happens, I think?
 		# unlike in Entwined Time, let's try NOT adding the bump at the start
@@ -1413,10 +1405,6 @@ func terrain_in_tile(pos: Vector2, actor: Actor = null, chrono: int = Chrono.TIM
 	return result;
 
 func chrono_for_maybe_green_actor(actor: Actor, chrono: int) -> int:
-	if (chrono >= Chrono.META_UNDO):
-		return chrono;
-	if (actor.is_green):
-		return Chrono.CHAR_UNDO;
 	return chrono;
 
 func set_cellv_maybe_rotation(id: int, tile: Vector2, layer: int) -> void:
@@ -1426,12 +1414,12 @@ func maybe_break_actor(actor: Actor, hypothetical: bool, green_terrain: int, chr
 	# AD04: being broken makes you immune to breaking :D
 	if (!actor.broken):
 		if (!hypothetical):
-			if (green_terrain == Greenness.Green and chrono < Chrono.CHAR_UNDO):
-				chrono = Chrono.CHAR_UNDO;
-			if (green_terrain == Greenness.Void and chrono < Chrono.META_UNDO):
-				chrono = Chrono.META_UNDO;
-			if (actor.is_crystal and chrono < Chrono.CHAR_UNDO):
-				chrono = Chrono.CHAR_UNDO;
+#			if (green_terrain == Greenness.Green and chrono < Chrono.CHAR_UNDO):
+#				chrono = Chrono.CHAR_UNDO;
+#			if (green_terrain == Greenness.Void and chrono < Chrono.META_UNDO):
+#				chrono = Chrono.META_UNDO;
+#			if (actor.is_crystal and chrono < Chrono.CHAR_UNDO):
+#				chrono = Chrono.CHAR_UNDO;
 			set_actor_var(actor, "broken", true, chrono);
 		return Success.Surprise;
 	else:
@@ -1465,8 +1453,8 @@ chrono: int, new_tile: int, assumed_old_tile: int = -2, animation_nonce: int = -
 			# set old_tile again (I guess it'll always be -1 at this point but just to be explicit about it)
 			old_tile = terrain_layer.get_cellv(pos);
 		set_cellv_maybe_rotation(new_tile, pos, layer);
-		if (green_terrain == Greenness.Green and chrono < Chrono.CHAR_UNDO):
-			chrono = Chrono.CHAR_UNDO;
+#		if (green_terrain == Greenness.Green and chrono < Chrono.CHAR_UNDO):
+#			chrono = Chrono.CHAR_UNDO;
 		if (green_terrain == Greenness.Void and chrono < Chrono.META_UNDO):
 			chrono = Chrono.META_UNDO;
 
@@ -1503,12 +1491,6 @@ func try_enter_terrain(actor: Actor, pos: Vector2, chrono: int) -> int:
 				result = no_if_true_yes_if_false(pos.x < actor.pos.x);
 			Tiles.OneWayNorth:
 				result = no_if_true_yes_if_false(pos.y > actor.pos.y);
-			Tiles.Water:
-				result = no_if_true_yes_if_false(actor.actorname == Actor.Name.Player);
-			Tiles.Ice:
-				result = no_if_true_yes_if_false(actor.actorname != Actor.Name.Player && !actor.is_star);
-			Tiles.MagicBarrier:
-				result = no_if_true_yes_if_false(actor.is_star);
 		if result != Success.Yes:
 			return result;
 	return result;
@@ -1534,9 +1516,6 @@ func try_enter(actor: Actor, dir: Vector2, chrono: int, can_push: bool, hypothet
 		return Success.Yes;
 	if (chrono >= Chrono.META_UNDO and is_retro):
 		# assuming no bugs, if it was overlapping in the meta-past, then it must have been valid to reach then
-		return Success.Yes;
-	# Also, for Unwin in particular, retro moves don't desync (though they might do other things in the future...)
-	if (chrono >= Chrono.CHAR_UNDO and is_retro):
 		return Success.Yes;
 	
 	var solidity_check = try_enter_terrain(actor, dest, chrono);
@@ -2176,44 +2155,25 @@ func time_passes(chrono: int) -> void:
 	animation_substep(chrono);
 	
 	# Fall into holes and bottomless pits. (Having this happen before star collect is INTERESTING...)
-	if (chrono < Chrono.META_UNDO):
-		for actor in actors:
-			if actor.broken or actor.is_star:
-				continue
-			var terrain = terrain_in_tile(actor.pos, actor, chrono);
-			for i in range(terrain.size()):
-				var tile = terrain[i];
-				if tile == Tiles.Hole:
-					actor.post_mortem = Actor.PostMortems.Fall;
-					#add_hole_sprite(actor, i);
-					set_actor_var(actor, "broken", true, chrono);
-					maybe_change_terrain(actor, actor.pos, i, false, Greenness.Mundane, chrono, -1);
-					break;
-				elif tile == Tiles.BottomlessPit:
-					actor.post_mortem = Actor.PostMortems.Fall;
-					set_actor_var(actor, "broken", true, chrono);
-					break;
+#	if (chrono < Chrono.META_UNDO):
+#		for actor in actors:
+#			if actor.broken:
+#				continue
+#			var terrain = terrain_in_tile(actor.pos, actor, chrono);
+#			for i in range(terrain.size()):
+#				var tile = terrain[i];
+#				if tile == Tiles.Hole:
+#					actor.post_mortem = Actor.PostMortems.Fall;
+#					#add_hole_sprite(actor, i);
+#					set_actor_var(actor, "broken", true, chrono);
+#					maybe_change_terrain(actor, actor.pos, i, false, Greenness.Mundane, chrono, -1);
+#					break;
+#				elif tile == Tiles.BottomlessPit:
+#					actor.post_mortem = Actor.PostMortems.Fall;
+#					set_actor_var(actor, "broken", true, chrono);
+#					break;
 	
-	animation_substep(chrono);
-	
-	# Collect stars. (Going to experiment with collecting happening during undo/unwin.)
-	if (chrono < Chrono.META_UNDO and !player.broken):
-		for actor in actors:
-			if actor.is_star and !actor.broken and actor.pos == player.pos:
-				# 'it's a blue event' will be handled inside of set_actor_var.
-				actor.post_mortem = Actor.PostMortems.Collect;
-				set_actor_var(actor, "broken", true, chrono);
-				
-				# Melt all surrounding ice.
-				# Notably this happens at Chrono.MOVE speed so it can't be 'forgotten'.
-				# ... Actually that might be a problem after all. Hmm.
-				# Like, if you collect a star during an undo, where does the ice melting GO.
-				# Idk, maybe it's okay? I'll try it and see if it's too buggy.
-				for actor2 in actors:
-					if actor2.actorname == Actor.Name.IceBlock and !actor2.broken:
-						if abs(actor2.pos.x - actor.pos.x) <= 1 and abs(actor2.pos.y - actor.pos.y) <= 1:
-							actor2.post_mortem = Actor.PostMortems.Melt;
-							set_actor_var(actor2, "broken", true, Chrono.MOVE);
+#	animation_substep(chrono);
 	
 func currently_fast_replay() -> bool:
 	if (!doing_replay):

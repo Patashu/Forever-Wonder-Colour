@@ -76,8 +76,7 @@ func get_next_texture() -> Texture:
 			if broken:
 				return null;
 			else:
-				frame = 0;
-				return preload("res://assets/ice_melt_spritesheet.png");
+				return preload("res://assets/ice_block.png");
 	
 	return null;
 
@@ -93,16 +92,6 @@ func set_next_texture(tex: Texture, facing_dir_at_the_time: Vector2) -> void:
 	frame_timer = 0;
 	#frame = 0;
 	match texture:
-		preload("res://assets/star_spritesheet.png"):
-			hframes = 6;
-			vframes = 1;
-			if (broken):
-				frame = 3;
-			else:
-				frame = 0;
-		preload("res://assets/ice_melt_spritesheet.png"):
-			hframes = 8;
-			vframes = 1;
 		preload("res://assets/player_spritesheet.png"):
 			hframes = 10;
 			vframes = 3;

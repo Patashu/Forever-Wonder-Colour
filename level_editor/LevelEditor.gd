@@ -115,25 +115,17 @@ func initialize_picker_array() -> void:
 	show_tooltips = true;
 		
 	picker_array.append(-1);
-	picker_array.append(Tiles.Floor);
 	picker_array.append(Tiles.Wall);
 	picker_array.append(Tiles.Player);
 	picker_array.append(Tiles.Win);
-	picker_array.append(Tiles.Star);
-	picker_array.append(Tiles.DirtBlock);
-	picker_array.append(Tiles.IceBlock);
-	picker_array.append(Tiles.Hole);
-	picker_array.append(Tiles.BottomlessPit);
-	picker_array.append(Tiles.Water);
-	picker_array.append(Tiles.Ice);
-	picker_array.append(Tiles.MagicBarrier);
-	picker_array.append(Tiles.CrackedStar);
-	picker_array.append(Tiles.DarkStar);
-	picker_array.append(Tiles.GreenAura);
+	picker_array.append(Tiles.StoneBlock);
+	picker_array.append(Tiles.WonderBlock);
 	picker_array.append(Tiles.OneWayWest);
 	picker_array.append(Tiles.OneWaySouth);
 	picker_array.append(Tiles.OneWayNorth);
 	picker_array.append(Tiles.OneWayEast);
+	picker_array.append(Tiles.SpliceFlower);
+	picker_array.append(Tiles.DepthDoor);
 	
 	for i in range(picker_array.size()):
 		var x = i % 21;
@@ -216,7 +208,7 @@ func serialize_current_level() -> String:
 
 	var result = "UnwinPuzzleStart: " + level_info.level_name + " by " + level_info.level_author + "\n";
 	var level_metadata = {};
-	var metadatas = ["level_name", "level_author", "level_replay",
+	var metadatas = ["level_name", "level_author", "level_replay", "door_depths",
 	"map_x_max", "map_y_max", #"target_sky"
 	];
 	for metadata in metadatas:
@@ -464,36 +456,16 @@ func tooltip_for_tile(tile: int) -> String:
 	match tile:
 		-1:
 			text = "";
-		Tiles.Floor:
-			text = "Floor: Ice Blocks slide along this."
 		Tiles.Wall:
 			text = "Wall: Solid."
 		Tiles.Player:
-			text = "Player: Lyrebirds are imbued with the power of Song. They can recall past memories so vividly it was like they hadn't happened yet, and through singing, they can be experienced again, and reinforced in the process. (In practice, you're a Sokoban player who can Unwin Stars.)"
+			text = "Player"
 		Tiles.Win:
-			text = "Win: If the Player is on Win and all Stars are collected: You win the puzzle."
-		Tiles.Star:
-			text = "Star: Can push and be pushed by Dirt Blocks and Ice Blocks if uncollected. Intangible if collected. Can be collected by being stepped on by the Player. When they do, release a 3x3 burst that melts Ice. Must collect all Stars to Win the puzzle. Floats above Holes and Bottomless Pits."
-		Tiles.DirtBlock:
-			text = "Dirt Block: An ordinary Sokoban block. Falls into Holes (filling them) and into Bottomless Pits (vanishing)."
-		Tiles.IceBlock:
-			text = "Ice Block: As per Dirt Block, but additionally: 1) Melted by collecting a Star in the 3x3 neighbourhood. 2) After moving, if it moved onto Floor, attempts to move again in the same direction."
-		Tiles.Hole:
-			text = "Hole: Stars float above Hole, but the Player and Blocks will fall in and fill the Hole (turning it into Floor)."
-		Tiles.BottomlessPit:
-			text = "Bottomless Pit: A Hole that cannot be filled."
-		Tiles.Water:
-			text = "Water: Solid to Players."
-		Tiles.Ice:
-			text = "Ice: Solid to Blocks."
-		Tiles.MagicBarrier:
-			text = "Magic Barrier: Solid to Stars."
-		Tiles.CrackedStar:
-			text = "Cracked Star: A Star that does not create an Unwin event."
-		Tiles.DarkStar:
-			text = "Dark Star: A Star that prevents the player from Unwinning past where it was collected."
-		Tiles.GreenAura:
-			text = "Green: Colour. (Attaches to the first actor to enter or start in its tile it can modify.) Immune to Undo events."
+			text = "Goal"
+		Tiles.StoneBlock:
+			text = "Stone Block: An ordinary Sokoban block."
+		Tiles.WonderBlock:
+			text = "Wonder Block: As per Stone Block, but pushing this resimulates history as though it were always there."
 		Tiles.OneWayWest:
 			text = "One Way: Solid to moves entering its tile."
 		Tiles.OneWaySouth:
@@ -502,6 +474,10 @@ func tooltip_for_tile(tile: int) -> String:
 			text = "One Way: Solid to moves entering its tile."
 		Tiles.OneWayEast:
 			text = "One Way: Solid to moves entering its tile."
+		Tiles.DepthDoor:
+			text = "Depth Door: Solid unless current Depth is greater than or equal to the displayed number."
+		Tiles.SpliceFlower:
+			text = "Splice Flower: When the Player steps here: Erase history (stopping re-simulation if it was in progress). This is the new turn 0. Delete this."
 	return text;
 	
 func picker_tooltip() -> void:

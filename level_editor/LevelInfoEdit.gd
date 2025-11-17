@@ -8,6 +8,7 @@ onready var okbutton : Button = get_node("Holder/OkButton");
 onready var levelname : TextEdit = get_node("Holder/LevelName");
 onready var levelauthor : TextEdit = get_node("Holder/LevelAuthor");
 onready var levelreplay : TextEdit = get_node("Holder/LevelReplay");
+onready var doordepths : TextEdit = get_node("Holder/DoorDepths");
 onready var skycolourbutton : ColorPickerButton = get_node("Holder/SkyColourButton");
 
 func _ready() -> void:	
@@ -19,6 +20,7 @@ func _ready() -> void:
 	levelname.text = parent.level_info.level_name;
 	levelauthor.text = parent.level_info.level_author;
 	levelreplay.text = parent.level_info.level_replay;
+	doordepths.text = parent.level_info.door_depths;
 	skycolourbutton.color = parent.level_info.target_sky;
 
 func destroy() -> void:
@@ -27,6 +29,7 @@ func destroy() -> void:
 	parent.level_info.level_name = levelname.text;
 	parent.level_info.level_author = levelauthor.text;
 	parent.level_info.level_replay = levelreplay.text;
+	parent.level_info.door_depths = doordepths.text;
 	parent.level_info.target_sky = skycolourbutton.color;
 	
 	self.queue_free();
