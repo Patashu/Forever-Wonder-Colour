@@ -1127,6 +1127,7 @@ func make_actors() -> void:
 	# they correctly ding/don't ding different kinds of goals
 	for actor in where_are_actors.keys():
 		move_actor_to(actor, where_are_actors[actor], Chrono.TIMELESS, false, false);
+		actor.home_pos = actor.pos;
 	
 	# crates
 	extract_actors(Tiles.StoneBlock, Actor.Name.StoneBlock, Heaviness.IRON, Strength.WOODEN, false);
@@ -1357,8 +1358,10 @@ is_move: bool = false, can_push: bool = true) -> int:
 	var result = move_actor_to(actor, actor.pos + dir, chrono, hypothetical, is_retro,
 	pushers_list, was_push, is_move, can_push);
 	
-	if (result == Success.Yes and actor.actorname == Actor.Name.WonderBlock):
-		TEMP_wonderchanged = true;
+	if (!hypothetical and result == Success.Yes and actor.actorname == Actor.Name.WonderBlock):
+		set_actor_var(actor, "home_pos", actor.pos, chrono);
+		if (chrono == Chrono.MOVE):
+			TEMP_wonderchanged = true;
 	
 	return result;
 
@@ -1857,6 +1860,10 @@ func undo_one_event(event: Array, chrono : int) -> void:
 			animation_substep += 1;
 		Undo.history_add1:
 			history_moves = history_moves.left(history_moves.length() - 1);
+		Undo.history_removed_these:
+			history_moves += event[1];
+		Undo.iteration:
+			total_iterations -= 1;
 
 func meta_undo_a_restart() -> bool:
 	var meta_undo_a_restart_type = 2;
@@ -2171,6 +2178,8 @@ func character_move(dir: Vector2) -> bool:
 		play_sound("bump")
 	if (result != Success.No):
 		increment_history(chr);
+		if (TEMP_wonderchanged):
+			increment_iteration();
 		adjust_meta_turn(1, Chrono.MOVE);
 	return result != Success.No;
 
@@ -2180,6 +2189,74 @@ func increment_history(chr: String) -> void:
 		TEMP_didpush = false;
 	history_moves += chr;
 	add_undo_event([Undo.history_add1], Chrono.MOVE);
+	
+func truncate_history() -> void:
+	# fixing an off by one
+	resimulation_turn += 1;
+	var truncated_history = history_moves.right(resimulation_turn);
+	history_moves = history_moves.left(resimulation_turn);
+	add_undo_event([Undo.history_removed_these, truncated_history], Chrono.MOVE);
+	
+func increment_iteration() -> void:
+	#cleanup temp variables
+	TEMP_wonderchanged = false;
+	#iterations, depth, undo event
+	total_iterations += 1;
+	current_depth += 1;
+	add_undo_event([Undo.iteration], Chrono.MOVE);
+	#TODO: depth doors
+	if (is_resimulating):
+		#truncate history and any other cleanup
+		truncate_history();
+		pass
+	# NOW we can set this to true *facepalms*
+	is_resimulating = true;
+	#TODO: any special animations
+	#move everything to home position and state
+	for actor in actors:
+		if (actor.actorname != Actor.Name.WonderBlock):
+			reset_to_home(actor);
+	#handle resetfrag (TODO: what does player/wonder block do?)
+	#yay O(n^2)
+	for actor in actors:
+		if (actor.actorname == Actor.Name.StoneBlock):
+			for actor2 in actors:
+				if (actor2.actorname == Actor.Name.WonderBlock and actor2.pos == actor.pos):
+					set_actor_var(actor, "broken", true, Chrono.MOVE);
+					break;
+	#loop through history
+	for h_i in range(history_moves.length()):
+		# TODO: on-screen label with simulation turn and depth
+		resimulation_turn = h_i;
+		var h = history_moves[h_i];
+		var h_lower = h.to_lower();
+		var dir = char_to_dir[h_lower];
+		animation_substep(Chrono.MOVE);
+		move_actor_initiate(player, dir, Chrono.MOVE,
+		false, false, [], false, true);
+		# TODO: emoticon reactions
+		if (TEMP_wonderchanged):
+			# truncate history, halt and recurse
+			truncate_history();
+			increment_iteration();
+			break;
+	# reduce depth and exit resimulation
+	current_depth -= 1;
+	resimulation_turn = 0;
+	is_resimulating = false;
+	#TODO: depth doors
+
+func reset_to_home(actor: Actor) -> void:
+	set_actor_var(actor, "broken", false, Chrono.MOVE);
+	var dir = actor.home_pos - actor.pos;
+	if (dir != Vector2.ZERO):
+		actor.pos = actor.home_pos;
+		add_undo_event([Undo.move, actor, dir, false],
+		chrono_for_maybe_green_actor(actor, Chrono.MOVE));
+		# TODO: needs a special animation
+		add_to_animation_server(actor, [Anim.move, dir, false]);
+
+var char_to_dir : Dictionary = { "w": Vector2.UP, "a": Vector2.LEFT, "s": Vector2.DOWN, "d": Vector2.RIGHT };
 
 func time_passes(chrono: int) -> void:
 	animation_substep(chrono);
