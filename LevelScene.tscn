@@ -327,15 +327,14 @@ visible = false
 script = ExtResource( 40 )
 
 [node name="MetaInfoLabel" type="Label" parent="."]
-visible = false
-margin_top = 18.0
 margin_right = 511.0
-margin_bottom = 32.0
+margin_bottom = 34.0
 theme = ExtResource( 2 )
 custom_colors/font_color = Color( 0.698039, 0.686275, 0.360784, 1 )
-text = "Meta"
+text = "History
+Iteration
+Inputs"
 align = 2
-valign = 1
 
 [node name="FadeIn" type="ColorRect" parent="."]
 visible = false

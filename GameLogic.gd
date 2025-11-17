@@ -79,7 +79,7 @@ enum Undo {
 	sfx, #4
 	history_add1, #5
 	history_removed_these, #6
-	splice_flower, #7
+	iteration, #7
 }
 
 # and same for animations
@@ -2457,7 +2457,10 @@ func update_info_labels() -> void:
 	metaredobutton.visible = meta_redo_inputs != "";
 
 	# TODO: need the +1mil for tutorial_complete = false here
-	metainfolabel.text = "History: " + str(history_moves.length()) + " | Inputs: " + str(meta_turn);
+	if (tutorial_complete):
+		metainfolabel.text = "Turn: " + str(history_moves.length()) + "\nIterations: " + str(total_iterations) + "\nInputs: " + str(meta_turn);
+	else:
+		metainfolabel.text = "Turn: " + str(history_moves.length() + 1000000);
 	
 	if (doing_replay):
 		replaybuttons.visible = true;
