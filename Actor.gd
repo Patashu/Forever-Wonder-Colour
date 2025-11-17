@@ -6,12 +6,14 @@ var actorname : int = -1
 var stored_position : Vector2 = Vector2.ZERO
 var pos : Vector2 = Vector2.ZERO
 var home_pos : Vector2 = Vector2.ZERO;
+var home_broken: bool = false;
 var broken : bool = false
 var post_mortem : int = -1;
 var strength : int = 0
 var heaviness : int = 0
 var durability : int = 0
 var is_character : bool = false
+var door_depth: int = 0
 # animation system logic
 var animation_timer : float = 0.0;
 var animation_timer_max : float = 0.05;
@@ -48,6 +50,7 @@ enum Name {
 	Goal,
 	StoneBlock,
 	WonderBlock,
+	DepthDoor,
 }
 
 func update_graphics() -> void:
@@ -78,6 +81,12 @@ func get_next_texture() -> Texture:
 				return null;
 			else:
 				return preload("res://assets/ice_block.png");
+				
+		Name.DepthDoor:
+			if broken:
+				return null;
+			else:
+				return preload("res://assets/depth_door_1.png");
 	
 	return null;
 
@@ -125,6 +134,18 @@ func phases_into_actors() -> bool:
 
 func afterimage() -> void:
 	gamelogic.afterimage(self);
+
+func set_door_depth(door_depth: int) -> void:
+	self.door_depth = door_depth;
+	if (self.door_depth < 0):
+		self.broken = true;
+		update_graphics();
+	# TODO: thought bubble number
+#	thought_bubble = Sprite.new();
+#	thought_bubble.set_script(preload("res://ThoughtBubble.gd"));
+#	thought_bubble.initialize(self.time_colour, self.ticks);
+#	thought_bubble.position = Vector2(12, -12);
+#	self.add_child(thought_bubble);
 
 func _process(delta: float) -> void:
 	#animated sprites

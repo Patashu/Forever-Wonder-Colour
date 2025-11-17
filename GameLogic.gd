@@ -168,6 +168,7 @@ var door_depths : String = "";
 var TEMP_wonderchanged : bool = false;
 var TEMP_didpush : bool = false;
 var TEMP_stumbled : bool = false;
+var TEMP_steppedonspliceflower : bool = false;
 
 # for afterimages
 var afterimage_server : Dictionary = {}
@@ -248,9 +249,9 @@ var chapter_skies : Array = [];
 var chapter_tracks : Array = [];
 var chapter_replacements : Dictionary = {};
 var level_replacements : Dictionary = {};
-var target_sky : Color = Color("25272a");
-var old_sky : Color = Color("25272a");
-var current_sky : Color = Color("25272a");
+var target_sky : Color = Color("19011A");
+var old_sky : Color = Color("19011A");
+var current_sky : Color = Color("19011A");
 var sky_timer : float = 0.0;
 var sky_timer_max : float = 0.0;
 var chapter_standard_starting_levels : Array = [];
@@ -864,7 +865,7 @@ func initialize_level_list() -> void:
 	chapter_names.push_back("Forever Wonder Colour");
 	chapter_standard_starting_levels.push_back(level_filenames.size());
 	chapter_standard_unlock_requirements.push_back(0);
-	chapter_skies.push_back(Color("25272A"));
+	chapter_skies.push_back(Color("19011A"));
 	chapter_tracks.push_back(0);
 	level_filenames.push_back("ForeverWonderColour")
 	chapter_advanced_starting_levels.push_back(level_filenames.size());
@@ -968,6 +969,7 @@ func ready_map() -> void:
 	TEMP_didpush = false;
 	TEMP_stumbled = false;
 	TEMP_wonderchanged = false;
+	TEMP_steppedonspliceflower = false;
 	
 	user_replay = "";
 	meta_redo_inputs = "";
@@ -983,6 +985,7 @@ func ready_map() -> void:
 			authors_replay = authors_replay_parts[authors_replay_parts.size()-1];
 		else:
 			authors_replay = annotated_authors_replay;
+		door_depths = level_info.door_depths;
 			
 	has_insight_level = false;
 	insight_level_scene = null;
@@ -1132,7 +1135,25 @@ func make_actors() -> void:
 	# crates
 	extract_actors(Tiles.StoneBlock, Actor.Name.StoneBlock, Heaviness.IRON, Strength.WOODEN, false);
 	extract_actors(Tiles.WonderBlock, Actor.Name.WonderBlock, Heaviness.IRON, Strength.WOODEN, false);
+	# doors
+	extract_actors(Tiles.DepthDoor, Actor.Name.DepthDoor, Heaviness.SUPERHEAVY, Strength.WOODEN, false);
+
+	depth_doors();
 	
+func depth_doors() -> void:
+	if door_depths == null or door_depths == "":
+		return
+	var door_depths_array = door_depths.split(",");
+	var i = 0;
+	if (door_depths_array.size() <= 0):
+		return
+	for actor in actors:
+		if actor.actorname == Actor.Name.DepthDoor:
+			actor.set_door_depth(int(door_depths_array[i]));
+			i += 1;
+			if i >= door_depths_array.size():
+				return
+
 func find_goals() -> void:
 	var layers = get_used_cells_by_id_all_layers(Tiles.Win);
 	for i in range(layers.size()):
@@ -1344,14 +1365,6 @@ func make_actor(actorname: int, pos: Vector2, is_character: bool, i: int, chrono
 		print("TODO")
 	return actor;
 
-func move_actor_initiate(actor: Actor, dir: Vector2, chrono: int, hypothetical: bool,
-is_retro: bool = false, pushers_list: Array = [],  was_push = false,
-is_move: bool = false, can_push: bool = true) -> int:
-	var result = move_actor_to(actor, actor.pos + dir, chrono, hypothetical, is_retro,
-	pushers_list, was_push, is_move, can_push);
-			
-	return result;
-
 func move_actor_relative(actor: Actor, dir: Vector2, chrono: int, hypothetical: bool,
 is_retro: bool = false, pushers_list: Array = [],  was_push = false,
 is_move: bool = false, can_push: bool = true) -> int:
@@ -1362,7 +1375,14 @@ is_move: bool = false, can_push: bool = true) -> int:
 		set_actor_var(actor, "home_pos", actor.pos, chrono);
 		if (chrono == Chrono.MOVE):
 			TEMP_wonderchanged = true;
-	
+			
+	if (!hypothetical and result == Success.Yes and actor.actorname == Actor.Name.Player and chrono == Chrono.MOVE):
+		var terrain = terrain_in_tile(actor.pos, actor, Chrono.MOVE);
+		if terrain.has(Tiles.SpliceFlower):
+			maybe_change_terrain(actor, actor.pos, terrain.find(Tiles.SpliceFlower),
+			hypothetical, Greenness.Mundane, Chrono.MOVE, -1);
+			TEMP_steppedonspliceflower = true;
+			tutorial_complete = true;
 	return result;
 
 func move_actor_to(actor: Actor, pos: Vector2, chrono: int, hypothetical: bool,
@@ -1728,6 +1748,7 @@ func adjust_meta_turn(amount: int, chrono: int) -> void:
 	TEMP_didpush = false;
 	TEMP_stumbled = false;
 	TEMP_wonderchanged = false;
+	TEMP_steppedonspliceflower = false;
 	
 func check_won(chrono: int) -> void:
 	won = false;
@@ -2164,7 +2185,7 @@ func character_move(dir: Vector2) -> bool:
 			play_sound("bump");
 			return false;
 		finish_animations(Chrono.MOVE);
-		result = move_actor_initiate(player, dir, Chrono.MOVE,
+		result = move_actor_relative(player, dir, Chrono.MOVE,
 		false, false, [], false, true);
 	
 	if (result == Success.Yes):
@@ -2178,6 +2199,8 @@ func character_move(dir: Vector2) -> bool:
 		play_sound("bump")
 	if (result != Success.No):
 		increment_history(chr);
+		if (TEMP_steppedonspliceflower):
+			splice_flower();
 		if (TEMP_wonderchanged):
 			increment_iteration();
 		adjust_meta_turn(1, Chrono.MOVE);
@@ -2202,7 +2225,7 @@ func increment_iteration() -> void:
 	TEMP_wonderchanged = false;
 	#iterations, depth, undo event
 	total_iterations += 1;
-	current_depth += 1;
+	adjust_depth(1);
 	add_undo_event([Undo.iteration], Chrono.MOVE);
 	#TODO: depth doors
 	if (is_resimulating):
@@ -2214,7 +2237,7 @@ func increment_iteration() -> void:
 	#TODO: any special animations
 	#move everything to home position and state
 	for actor in actors:
-		if (actor.actorname != Actor.Name.WonderBlock):
+		if (actor.actorname != Actor.Name.WonderBlock and actor.actorname != Actor.Name.DepthDoor):
 			reset_to_home(actor);
 	#handle resetfrag (TODO: what does player/wonder block do?)
 	#yay O(n^2)
@@ -2232,22 +2255,47 @@ func increment_iteration() -> void:
 		var h_lower = h.to_lower();
 		var dir = char_to_dir[h_lower];
 		animation_substep(Chrono.MOVE);
-		move_actor_initiate(player, dir, Chrono.MOVE,
+		move_actor_relative(player, dir, Chrono.MOVE,
 		false, false, [], false, true);
 		# TODO: emoticon reactions
+		# splice flower interrupts
+		if (TEMP_steppedonspliceflower):
+			splice_flower();
+			break;
 		if (TEMP_wonderchanged):
 			# truncate history, halt and recurse
 			truncate_history();
 			increment_iteration();
 			break;
 	# reduce depth and exit resimulation
-	current_depth -= 1;
+	adjust_depth(-1);
 	resimulation_turn = 0;
 	is_resimulating = false;
 	#TODO: depth doors
 
+func splice_flower() -> void:
+	TEMP_steppedonspliceflower = false;
+	resimulation_turn = -1; #un-fixing the off-by-one lmao
+	truncate_history();
+	resimulation_turn = 0;
+	for actor in actors:
+		if (actor.actorname != Actor.Name.DepthDoor):
+			set_actor_var(actor, "home_pos", actor.pos, Chrono.MOVE);
+			set_actor_var(actor, "home_broken", actor.broken, Chrono.MOVE);
+
+func adjust_depth(impulse: int) -> void:
+	current_depth += impulse;
+	for actor in actors:
+		if (actor.actorname == Actor.Name.DepthDoor):
+			# positive: N is closed unless depth >= N.
+			# negative: N is open unless depth >= N.
+			if (actor.door_depth > 0):
+				set_actor_var(actor, "broken", current_depth >= actor.door_depth, Chrono.MOVE);
+			elif (actor.door_depth < 0):
+				set_actor_var(actor, "broken", current_depth < -actor.door_depth, Chrono.MOVE);
+
 func reset_to_home(actor: Actor) -> void:
-	set_actor_var(actor, "broken", false, Chrono.MOVE);
+	set_actor_var(actor, "broken", actor.home_broken, Chrono.MOVE);
 	var dir = actor.home_pos - actor.pos;
 	if (dir != Vector2.ZERO):
 		actor.pos = actor.home_pos;
@@ -2805,10 +2853,10 @@ func serialize_current_level() -> String:
 		return custom_string;
 	
 	# keep in sync with LevelEditor.gd serialize_current_level()
-	var result = "UnwinPuzzleStart: " + level_name + " by " + level_author + "\n";
+	var result = "FWCPuzzleStart: " + level_name + " by " + level_author + "\n";
 	var level_metadata = {};
 	var metadatas = ["level_name", "level_author", #"level_replay",
-	"map_x_max", "map_y_max", 
+	"map_x_max", "map_y_max", "door_depths"
 	];
 	for metadata in metadatas:
 		level_metadata[metadata] = self.get(metadata);
@@ -2849,7 +2897,7 @@ func serialize_current_level() -> String:
 					result += str(tile);
 			result += "\n";
 	
-	result += "UnwinPuzzleEnd"
+	result += "FWCPuzzleEnd"
 	level.queue_free();
 	return result.split("\n").join("`\n");
 	
@@ -2860,7 +2908,7 @@ func copy_level() -> void:
 	
 func looks_like_level(custom: String) -> bool:
 	custom = custom.strip_edges();
-	if custom.find("UnwinPuzzleStart") >= 0 and custom.find("UnwinPuzzleEnd") >= 0:
+	if custom.find("FWCPuzzleStart") >= 0 and custom.find("FWCPuzzleEnd") >= 0:
 		return true;
 	return false;
 	
@@ -2875,11 +2923,11 @@ func deserialize_custom_level(custom: String) -> Node:
 	for i in range(lines.size()):
 		lines[i] = lines[i].strip_edges();
 	
-	if (lines[0].find("UnwinPuzzleStart") == -1):
-		floating_text("Assert failed: Line 1 should start UnwinPuzzleStart");
+	if (lines[0].find("FWCPuzzleStart") == -1):
+		floating_text("Assert failed: Line 1 should start FWCPuzzleStart");
 		return null;
-	if (lines[(lines.size() - 1)] != "UnwinPuzzleEnd"):
-		floating_text("Assert failed: Last line should be UnwinPuzzleEnd");
+	if (lines[(lines.size() - 1)] != "FWCPuzzleEnd"):
+		floating_text("Assert failed: Last line should be FWCPuzzleEnd");
 		return null;
 	var json_parse_result = JSON.parse(lines[1])
 	
@@ -2895,7 +2943,7 @@ func deserialize_custom_level(custom: String) -> Node:
 		return null;
 	
 	var metadatas = ["level_name", "level_author", "level_replay",
-	"map_x_max", "map_y_max", "target_sky", "layers",];
+	"map_x_max", "map_y_max", "target_sky", "layers", "door_depths"];
 	
 	for metadata in metadatas:
 		if (!result.has(metadata)):
@@ -2953,6 +3001,7 @@ func load_custom_level(custom: String) -> void:
 	level_replay = level_info["level_replay"];
 	map_x_max = int(level_info["map_x_max"]);
 	map_y_max = int(level_info["map_y_max"]);
+	door_depths = level_info["door_depths"];
 	sky_timer = 0;
 	sky_timer_max = 3.0;
 	old_sky = current_sky;

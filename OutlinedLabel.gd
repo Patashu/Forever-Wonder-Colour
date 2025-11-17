@@ -24,7 +24,7 @@ func _ready() -> void:
 		sl.rect_position = offset;
 		self.add_child(sl);
 		sl.theme = preload("res://DefaultTheme.tres");
-		sl.add_color_override("font_color", Color("25272A"));
+		sl.add_color_override("font_color", Color("19011A"));
 		
 	label = Label.new();
 	label.align = Label.ALIGN_CENTER;
