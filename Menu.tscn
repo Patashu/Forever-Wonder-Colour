@@ -14,7 +14,7 @@ margin_right = 340.0
 margin_bottom = 244.0
 theme = ExtResource( 2 )
 custom_styles/normal = ExtResource( 1 )
-text = "Unwin v1.3 - Pause Menu"
+text = "Forever Wonder Colour b0"
 align = 1
 
 [node name="OkButton" type="Button" parent="Holder"]
@@ -87,6 +87,7 @@ focus_neighbour_top = NodePath("../LevelEditorButton")
 text = "Controls"
 
 [node name="HintButton" type="Button" parent="Holder"]
+visible = false
 margin_left = 79.0
 margin_top = 139.0
 margin_right = 160.0
@@ -109,9 +110,11 @@ margin_top = 107.0
 margin_right = 74.0
 margin_bottom = 122.0
 focus_neighbour_left = NodePath("../QuitGameButton")
+focus_neighbour_bottom = NodePath("../OkButton")
 text = "Restart"
 
 [node name="InsightButton" type="Button" parent="Holder"]
+visible = false
 margin_left = 9.0
 margin_top = 139.0
 margin_right = 74.0
@@ -126,11 +129,13 @@ margin_top = 107.0
 margin_right = 160.0
 margin_bottom = 122.0
 focus_neighbour_right = NodePath("../RestartButton")
+focus_neighbour_bottom = NodePath("../YourReplayButton")
 text = "Quit Game"
 
 [node name="Pointer" type="Sprite" parent="Holder"]
 
 [node name="Label" type="Label" parent="Holder"]
+visible = false
 margin_left = 12.0
 margin_top = 126.0
 margin_right = 160.0
