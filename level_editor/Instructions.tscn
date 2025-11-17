@@ -26,7 +26,8 @@ text = "Level Editor Instructions:
 * F1 / Menu > Test Level to playtest. A win will become the official replay.
 * Save often to not lose progress: 'Copy Level' (Ctrl+C)
 * The level can be played in-game by anyone using 'Paste Level' (Ctrl+V).
-* You can toggle between 1x and 1/2x zoom with - key."
+* You can toggle between 1x and 1/2x zoom with - key.
+* Door Depths is a comma-separated list that will be applied to Depth Doors in layer then reading order. N means 'solid below Depth N'. -N means 'non-solid below depth N'."
 align = 1
 autowrap = true
 
