@@ -5,6 +5,7 @@ var gamelogic = null
 var actorname : int = -1
 var stored_position : Vector2 = Vector2.ZERO
 var pos : Vector2 = Vector2.ZERO
+var home_pos : Vector2 = Vector2.ZERO;
 var broken : bool = false
 var post_mortem : int = -1;
 var strength : int = 0

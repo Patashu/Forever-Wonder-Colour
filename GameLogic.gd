@@ -77,6 +77,9 @@ enum Undo {
 	animation_substep, #2
 	change_terrain, #3
 	sfx, #4
+	history_add1, #5
+	history_removed_these, #6
+	splice_flower, #7
 }
 
 # and same for animations
@@ -161,6 +164,10 @@ var is_resimulating : bool = false;
 var resimulation_turn : int = 0;
 var total_iterations : int = 0;
 var door_depths : String = "";
+# additional information about what happened during a move
+var TEMP_wonderchanged : bool = false;
+var TEMP_didpush : bool = false;
+var TEMP_stumbled : bool = false;
 
 # for afterimages
 var afterimage_server : Dictionary = {}
@@ -951,11 +958,17 @@ func ready_map() -> void:
 		whatever.queue_free();
 	meta_turn = 0;
 	meta_undo_buffer.clear();
+	
 	history_moves = "";
 	current_depth = 0;
 	total_iterations = 0;
 	is_resimulating = false;
 	resimulation_turn = 0;
+	
+	TEMP_didpush = false;
+	TEMP_stumbled = false;
+	TEMP_wonderchanged = false;
+	
 	user_replay = "";
 	meta_redo_inputs = "";
 	preserving_meta_redo_inputs = false;
@@ -1325,6 +1338,7 @@ func make_actor(actorname: int, pos: Vector2, is_character: bool, i: int, chrono
 	actor.offset = Vector2(cell_size/2, cell_size/2);
 	add_actor_or_goal_at_appropriate_layer(actor, i);
 	move_actor_to(actor, pos, chrono, false, false);
+	actor.home_pos = actor.pos;
 	if (chrono < Chrono.META_UNDO):
 		print("TODO")
 	return actor;
@@ -1342,6 +1356,9 @@ is_retro: bool = false, pushers_list: Array = [],  was_push = false,
 is_move: bool = false, can_push: bool = true) -> int:
 	var result = move_actor_to(actor, actor.pos + dir, chrono, hypothetical, is_retro,
 	pushers_list, was_push, is_move, can_push);
+	
+	if (result == Success.Yes and actor.actorname == Actor.Name.WonderBlock):
+		TEMP_wonderchanged = true;
 	
 	return result;
 
@@ -1375,6 +1392,7 @@ is_move: bool = false, can_push: bool = true) -> int:
 			add_to_animation_server(actor, [Anim.sfx, "push"]);
 			# dirty hack - we would really rather have some way to send this information to their Anim.move event
 			if (pushers_list.has(player)):
+				TEMP_didpush = true;
 				player.exerting = true;
 		
 		add_to_animation_server(actor, [Anim.move, dir, is_retro]);
@@ -1382,9 +1400,10 @@ is_move: bool = false, can_push: bool = true) -> int:
 		return success;
 	elif (success != Success.Yes):
 		if (!hypothetical):
-			# involuntary bump sfx (atm this plays when an ice block slide ends)
-			if (is_retro):
+			# involuntary bump sfx (want this for stumbling during resimulation
+			if (is_retro or resimulation_turn):
 				add_to_animation_server(actor, [Anim.sfx, "involuntarybumpother"], false);
+				TEMP_stumbled = true;
 		# bump animation always happens, I think?
 		# unlike in Entwined Time, let's try NOT adding the bump at the start
 		add_to_animation_server(actor, [Anim.bump, dir], false);
@@ -1703,6 +1722,9 @@ func adjust_meta_turn(amount: int, chrono: int) -> void:
 	# print("=== IT IS NOW META TURN " + str(meta_turn) + " ===");
 	if (won or lost or amount >= 0):
 		check_won(chrono);
+	TEMP_didpush = false;
+	TEMP_stumbled = false;
+	TEMP_wonderchanged = false;
 	
 func check_won(chrono: int) -> void:
 	won = false;
@@ -1830,11 +1852,11 @@ func undo_one_event(event: Array, chrono : int) -> void:
 			var actor = event[1];
 			var sfx = event[2];
 			add_to_animation_server(actor, [Anim.sfx, sfx]);
-	
-	match event[0]:
 		Undo.animation_substep:
 			# don't need to emit a new event as meta undoing and beyond is a teleport
 			animation_substep += 1;
+		Undo.history_add1:
+			history_moves = history_moves.left(history_moves.length() - 1);
 
 func meta_undo_a_restart() -> bool:
 	var meta_undo_a_restart_type = 2;
@@ -2148,8 +2170,16 @@ func character_move(dir: Vector2) -> bool:
 	if (result != Success.Yes):
 		play_sound("bump")
 	if (result != Success.No):
+		increment_history(chr);
 		adjust_meta_turn(1, Chrono.MOVE);
 	return result != Success.No;
+
+func increment_history(chr: String) -> void:
+	if (TEMP_didpush):
+		chr = chr.to_upper();
+		TEMP_didpush = false;
+	history_moves += chr;
+	add_undo_event([Undo.history_add1], Chrono.MOVE);
 
 func time_passes(chrono: int) -> void:
 	animation_substep(chrono);
