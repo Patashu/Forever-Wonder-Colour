@@ -1264,6 +1264,7 @@ func prepare_audio() -> void:
 	sounds["restart"] = preload("res://sfx/restart.ogg");
 	sounds["heavystep"] = preload("res://sfx/heavystep.ogg");
 	sounds["voidundo"] = preload("res://sfx/voidundo.ogg");
+	sounds["step"] = preload("res://sfx/step.ogg");
 	sounds["switch"] = preload("res://sfx/switch.ogg");
 
 	#music_tracks.append(preload("res://music/Mind Palace.ogg"));
@@ -2264,6 +2265,7 @@ func increment_iteration() -> void:
 		var h_lower = h.to_lower();
 		var dir = char_to_dir[h_lower];
 		animation_substep(Chrono.MOVE);
+		add_to_animation_server(player, [Anim.sfx, "step"]);
 		move_actor_relative(player, dir, Chrono.MOVE,
 		false, false, [], false, true);
 		# TODO: emoticon reactions
