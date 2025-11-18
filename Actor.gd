@@ -14,6 +14,9 @@ var heaviness : int = 0
 var durability : int = 0
 var is_character : bool = false
 var door_depth: int = 0
+# sparkles
+var sparkle_timer : float = 0.0;
+var sparkle_timer_max : float = 1.2;
 # animation system logic
 var animation_timer : float = 0.0;
 var animation_timer_max : float = 0.05;
@@ -148,6 +151,24 @@ func set_door_depth(door_depth: int) -> void:
 #	self.add_child(thought_bubble);
 
 func _process(delta: float) -> void:
+	# sparkles
+	if (actorname == Name.WonderBlock):
+		sparkle_timer += delta;
+		if (sparkle_timer >= sparkle_timer_max):
+			sparkle_timer -= sparkle_timer_max*gamelogic.rng.randf_range(0.9, 1.1);
+			# one sparkle
+			var sprite = Sprite.new();
+			sprite.set_script(preload("res://FadingSprite.gd"));
+			sprite.texture = preload("res://assets/Sparkle.png")
+			sprite.position = self.offset + Vector2(gamelogic.rng.randf_range(-6, 6), gamelogic.rng.randf_range(-6, 6));
+			sprite.frame = 0;
+			sprite.centered = true;
+			sprite.scale = Vector2(0.25, 0.25);
+			sprite.modulate = Color("FF7F00");
+			if (gamelogic.rng.randi_range(0, 1) == 1):
+				sprite.modulate = Color("FFEBD8");
+			self.add_child(sprite)
+	
 	#animated sprites
 	if actorname == Name.Player:
 		if moving != Vector2.ZERO:

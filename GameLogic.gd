@@ -1364,6 +1364,7 @@ func make_actor(actorname: int, pos: Vector2, is_character: bool, i: int, chrono
 	add_actor_or_goal_at_appropriate_layer(actor, i);
 	move_actor_to(actor, pos, chrono, false, false);
 	actor.home_pos = actor.pos;
+	actor.sparkle_timer += rng.randf_range(0.0, actor.sparkle_timer_max);
 	if (chrono < Chrono.META_UNDO):
 		print("TODO")
 	return actor;
