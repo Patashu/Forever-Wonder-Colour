@@ -1253,6 +1253,7 @@ func prepare_audio() -> void:
 	sounds["wonderchange"] = preload("res://sfx/wonderchange.ogg");
 	sounds["whereblock"] = preload("res://sfx/whereblock.ogg");
 	sounds["surpriseblock"] = preload("res://sfx/surpriseblock.ogg");
+	sounds["ouch"] = preload("res://sfx/ouch.ogg");
 	#sounds["intro"] = preload("res://sfx/intro.ogg");
 	#sounds["outro"] = preload("res://sfx/outro.ogg");
 	
