@@ -277,247 +277,250 @@ func _process(delta: float) -> void:
 					is_done = true;
 				else:
 					is_done = false;
-			7: #melt
-				if (animation_timer == 0):
-					gamelogic.play_sound("melt");
-				animation_timer_max = 0.4;
-				var old_animation_timer_tick = int(animation_timer*10);
-				animation_timer += delta;
-				var new_animation_timer_tick = int(animation_timer*10);
-				if (old_animation_timer_tick != new_animation_timer_tick):
-					for i in range(3):
-						var sprite = Sprite.new();
-						sprite.set_script(preload("res://FadingSprite.gd"));
-						if (gamelogic.rng.randi_range(0, 1) == 1):
-							sprite.texture = preload("res://assets/ice_melt_spritesheet.png")
-							sprite.hframes = 8;
-							sprite.vframes = 1;
-							sprite.frame = 5;
-							sprite.fadeout_timer_max = 0.4;
-							sprite.velocity = Vector2(gamelogic.rng.randf_range(16, 32), 0).rotated(gamelogic.rng.randf_range(0, PI*2));
-						else:
-							sprite.texture = preload("res://assets/dust.png")
-							sprite.hframes = 8;
-							sprite.vframes = 1;
-							sprite.frame = gamelogic.rng.randi_range(0, sprite.hframes - 1);
-							sprite.fadeout_timer_max = 0.8;
-							sprite.velocity = Vector2(0, -gamelogic.rng.randf_range(16, 32)).rotated(gamelogic.rng.randf_range(-0.5, 0.5));
-						sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
-						sprite.centered = true;
-						gamelogic.overactorsparticles.add_child(sprite);
-				frame = clamp(round((animation_timer / animation_timer_max)*(hframes-1)), 0, hframes - 1); #or floor or ceil
-				if (animation_timer > animation_timer_max):
-					is_done = true;
-				else:
-					is_done = false;
+			7: #melt'
+				is_done = true;
+#				if (animation_timer == 0):
+#					gamelogic.play_sound("melt");
+#				animation_timer_max = 0.4;
+#				var old_animation_timer_tick = int(animation_timer*10);
+#				animation_timer += delta;
+#				var new_animation_timer_tick = int(animation_timer*10);
+#				if (old_animation_timer_tick != new_animation_timer_tick):
+#					for i in range(3):
+#						var sprite = Sprite.new();
+#						sprite.set_script(preload("res://FadingSprite.gd"));
+#						if (gamelogic.rng.randi_range(0, 1) == 1):
+#							sprite.texture = preload("res://assets/ice_melt_spritesheet.png")
+#							sprite.hframes = 8;
+#							sprite.vframes = 1;
+#							sprite.frame = 5;
+#							sprite.fadeout_timer_max = 0.4;
+#							sprite.velocity = Vector2(gamelogic.rng.randf_range(16, 32), 0).rotated(gamelogic.rng.randf_range(0, PI*2));
+#						else:
+#							sprite.texture = preload("res://assets/dust.png")
+#							sprite.hframes = 8;
+#							sprite.vframes = 1;
+#							sprite.frame = gamelogic.rng.randi_range(0, sprite.hframes - 1);
+#							sprite.fadeout_timer_max = 0.8;
+#							sprite.velocity = Vector2(0, -gamelogic.rng.randf_range(16, 32)).rotated(gamelogic.rng.randf_range(-0.5, 0.5));
+#						sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+#						sprite.centered = true;
+#						gamelogic.overactorsparticles.add_child(sprite);
+#				frame = clamp(round((animation_timer / animation_timer_max)*(hframes-1)), 0, hframes - 1); #or floor or ceil
+#				if (animation_timer > animation_timer_max):
+#					is_done = true;
+#				else:
+#					is_done = false;
 			8: #unmelt
 				# since it's currently invisible due to being 'broken'
-				texture = preload("res://assets/ice_melt_spritesheet.png");
-				visible = true;
-				if (animation_timer == 0):
-					gamelogic.play_sound("unmelt");
-				animation_timer_max = 0.4;
-				var old_animation_timer_tick = int(animation_timer*10);
-				animation_timer += delta;
-				var new_animation_timer_tick = int(animation_timer*10);
-				if (old_animation_timer_tick != new_animation_timer_tick):
-					for i in range(4):
-						var sprite = null;
-						if (gamelogic.rng.randi_range(0, 1) == 1):
-							sprite = gamelogic.afterimage_terrain(preload("res://assets/ice_melt_spritesheet.png"), position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2), gamelogic.red_color);
-							if (sprite != null):
-								var child = sprite.get_child(0);
-								child.centered = true;
-								child.hframes = 8;
-								child.vframes = 1;
-								child.frame = 4;
-								sprite.timer_max = 0.4;
-								sprite.velocity = Vector2(gamelogic.rng.randf_range(16, 32), 0).rotated(gamelogic.rng.randf_range(0, PI*2));
-								sprite.position -= sprite.velocity*sprite.timer_max;
-				frame = clamp(round((animation_timer / animation_timer_max)*(hframes-1)), 0, hframes - 1); #or floor or ceil
-				frame = (hframes-1)-frame;
-				if (animation_timer > animation_timer_max):
-					is_done = true;
-				else:
-					is_done = false;
-			9: #starget
-				var c = Color("E0B94A");
-				if (animation_timer == 0):
-					if (!gamelogic.currently_fast_replay()):
-						gamelogic.play_sound("starget");
-						var sparklespawner = Node2D.new();
-						sparklespawner.script = preload("res://SparkleSpawner.gd");
-						sparklespawner.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
-						gamelogic.overactorsparticles.add_child(sparklespawner);
-						sparklespawner.color = c;
-						gamelogic.undo_effect_strength = 0.12;
-						gamelogic.undo_effect_per_second = 0.12;
-						gamelogic.undo_effect_color = c;
-						gamelogic.floating_text("You got a Star!");
-				animation_timer_max = 1.0;
-				var old_animation_timer_tick = int(animation_timer*5);
-				animation_timer += delta;
-				var new_animation_timer_tick = int(animation_timer*5);
-				if (old_animation_timer_tick != new_animation_timer_tick):
-					for i in range(2):
-						var sprite = Sprite.new();
-						sprite.set_script(preload("res://FadingSprite.gd"));
-						if (i == 0):
-							sprite.texture = preload("res://assets/star_particle_smaller.png")
-							sprite.modulate = c;
-							sprite.fadeout_timer_max = 1.6;
-							sprite.velocity = Vector2(gamelogic.rng.randf_range(8, 16), 0).rotated(gamelogic.rng.randf_range(0, PI*2));
-							sprite.rotation = gamelogic.rng.randf_range(0, PI*2);
-						else:
-							sprite.texture = preload("res://assets/action_line.png")
-							sprite.modulate = c;
-							sprite.fadeout_timer_max = 1.6;
-							sprite.rotation = gamelogic.rng.randf_range(0, PI*2);
-							sprite.velocity = Vector2(0, -gamelogic.rng.randf_range(8, 16)).rotated(sprite.rotation);
-							sprite.scale = Vector2(2.0, 2.0);
-						sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
-						sprite.position += sprite.velocity;
-						sprite.centered = true;
-						gamelogic.overactorsparticles.add_child(sprite);
-				if (self.actorname == Name.Star):
-					frame = clamp(round((animation_timer / animation_timer_max)*3), 0, 3);
-				if (animation_timer > animation_timer_max):
-					if (self.actorname == Name.Star):
-						frame = 3;
-					is_done = true;
-				else:
-					is_done = false;
-				
-			10: #starunget
-				var c = Color("A7A79E");
-				if (animation_timer == 0):
-					if (!gamelogic.currently_fast_replay()):
-						gamelogic.play_sound("unwin");
-						var sparklespawner = Node2D.new();
-						sparklespawner.script = preload("res://SparkleSpawner.gd");
-						sparklespawner.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
-						gamelogic.overactorsparticles.add_child(sparklespawner);
-						sparklespawner.color = c;
-						gamelogic.undo_effect_strength = 0.12;
-						gamelogic.undo_effect_per_second = 0.12;
-						gamelogic.undo_effect_color = c;
-						gamelogic.floating_text("You recall not having that Star...", true);
-				animation_timer_max = 1.0;
-				var old_animation_timer_tick = int(animation_timer*5);
-				animation_timer += delta;
-				var new_animation_timer_tick = int(animation_timer*5);
-				if (old_animation_timer_tick != new_animation_timer_tick):
-					for i in range(2):
-						var sprite = Sprite.new();
-						sprite.set_script(preload("res://FadingSprite.gd"));
-						if (i == 0):
-							sprite.texture = preload("res://assets/star_particle_smaller.png")
-							sprite.modulate = c;
-							sprite.fadeout_timer_max = 1.6;
-							sprite.velocity = Vector2(gamelogic.rng.randf_range(8, 16), 0).rotated(gamelogic.rng.randf_range(0, PI*2));
-							sprite.rotation = gamelogic.rng.randf_range(0, PI*2);
-						else:
-							sprite.texture = preload("res://assets/action_line.png")
-							sprite.modulate = c;
-							sprite.fadeout_timer_max = 1.6;
-							sprite.rotation = gamelogic.rng.randf_range(0, PI*2);
-							sprite.velocity = Vector2(0, -gamelogic.rng.randf_range(8, 16)).rotated(sprite.rotation);
-							sprite.scale = Vector2(2.0, 2.0);
-						sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
-						sprite.position -= sprite.velocity*2;
-						sprite.centered = true;
-						gamelogic.overactorsparticles.add_child(sprite);
-				if (self.actorname == Name.Star):
-					frame = clamp(3 + round((animation_timer / animation_timer_max)*2), 3, 5);
-				if (animation_timer > animation_timer_max):
-					if (self.actorname == Name.Star):
-						frame = 0;
-					is_done = true;
-				else:
-					is_done = false;
+				is_done = true;
+#				texture = preload("res://assets/ice_melt_spritesheet.png");
+#				visible = true;
+#				if (animation_timer == 0):
+#					gamelogic.play_sound("unmelt");
+#				animation_timer_max = 0.4;
+#				var old_animation_timer_tick = int(animation_timer*10);
+#				animation_timer += delta;
+#				var new_animation_timer_tick = int(animation_timer*10);
+#				if (old_animation_timer_tick != new_animation_timer_tick):
+#					for i in range(4):
+#						var sprite = null;
+#						if (gamelogic.rng.randi_range(0, 1) == 1):
+#							sprite = gamelogic.afterimage_terrain(preload("res://assets/ice_melt_spritesheet.png"), position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2), gamelogic.red_color);
+#							if (sprite != null):
+#								var child = sprite.get_child(0);
+#								child.centered = true;
+#								child.hframes = 8;
+#								child.vframes = 1;
+#								child.frame = 4;
+#								sprite.timer_max = 0.4;
+#								sprite.velocity = Vector2(gamelogic.rng.randf_range(16, 32), 0).rotated(gamelogic.rng.randf_range(0, PI*2));
+#								sprite.position -= sprite.velocity*sprite.timer_max;
+#				frame = clamp(round((animation_timer / animation_timer_max)*(hframes-1)), 0, hframes - 1); #or floor or ceil
+#				frame = (hframes-1)-frame;
+#				if (animation_timer > animation_timer_max):
+#					is_done = true;
+#				else:
+#					is_done = false;
+#			9: #starget
+#				var c = Color("E0B94A");
+#				if (animation_timer == 0):
+#					if (!gamelogic.currently_fast_replay()):
+#						gamelogic.play_sound("starget");
+#						var sparklespawner = Node2D.new();
+#						sparklespawner.script = preload("res://SparkleSpawner.gd");
+#						sparklespawner.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+#						gamelogic.overactorsparticles.add_child(sparklespawner);
+#						sparklespawner.color = c;
+#						gamelogic.undo_effect_strength = 0.12;
+#						gamelogic.undo_effect_per_second = 0.12;
+#						gamelogic.undo_effect_color = c;
+#						gamelogic.floating_text("You got a Star!");
+#				animation_timer_max = 1.0;
+#				var old_animation_timer_tick = int(animation_timer*5);
+#				animation_timer += delta;
+#				var new_animation_timer_tick = int(animation_timer*5);
+#				if (old_animation_timer_tick != new_animation_timer_tick):
+#					for i in range(2):
+#						var sprite = Sprite.new();
+#						sprite.set_script(preload("res://FadingSprite.gd"));
+#						if (i == 0):
+#							sprite.texture = preload("res://assets/star_particle_smaller.png")
+#							sprite.modulate = c;
+#							sprite.fadeout_timer_max = 1.6;
+#							sprite.velocity = Vector2(gamelogic.rng.randf_range(8, 16), 0).rotated(gamelogic.rng.randf_range(0, PI*2));
+#							sprite.rotation = gamelogic.rng.randf_range(0, PI*2);
+#						else:
+#							sprite.texture = preload("res://assets/action_line.png")
+#							sprite.modulate = c;
+#							sprite.fadeout_timer_max = 1.6;
+#							sprite.rotation = gamelogic.rng.randf_range(0, PI*2);
+#							sprite.velocity = Vector2(0, -gamelogic.rng.randf_range(8, 16)).rotated(sprite.rotation);
+#							sprite.scale = Vector2(2.0, 2.0);
+#						sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+#						sprite.position += sprite.velocity;
+#						sprite.centered = true;
+#						gamelogic.overactorsparticles.add_child(sprite);
+#				if (self.actorname == Name.Star):
+#					frame = clamp(round((animation_timer / animation_timer_max)*3), 0, 3);
+#				if (animation_timer > animation_timer_max):
+#					if (self.actorname == Name.Star):
+#						frame = 3;
+#					is_done = true;
+#				else:
+#					is_done = false;
+#
+#			10: #starunget
+#				var c = Color("A7A79E");
+#				if (animation_timer == 0):
+#					if (!gamelogic.currently_fast_replay()):
+#						gamelogic.play_sound("unwin");
+#						var sparklespawner = Node2D.new();
+#						sparklespawner.script = preload("res://SparkleSpawner.gd");
+#						sparklespawner.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+#						gamelogic.overactorsparticles.add_child(sparklespawner);
+#						sparklespawner.color = c;
+#						gamelogic.undo_effect_strength = 0.12;
+#						gamelogic.undo_effect_per_second = 0.12;
+#						gamelogic.undo_effect_color = c;
+#						gamelogic.floating_text("You recall not having that Star...", true);
+#				animation_timer_max = 1.0;
+#				var old_animation_timer_tick = int(animation_timer*5);
+#				animation_timer += delta;
+#				var new_animation_timer_tick = int(animation_timer*5);
+#				if (old_animation_timer_tick != new_animation_timer_tick):
+#					for i in range(2):
+#						var sprite = Sprite.new();
+#						sprite.set_script(preload("res://FadingSprite.gd"));
+#						if (i == 0):
+#							sprite.texture = preload("res://assets/star_particle_smaller.png")
+#							sprite.modulate = c;
+#							sprite.fadeout_timer_max = 1.6;
+#							sprite.velocity = Vector2(gamelogic.rng.randf_range(8, 16), 0).rotated(gamelogic.rng.randf_range(0, PI*2));
+#							sprite.rotation = gamelogic.rng.randf_range(0, PI*2);
+#						else:
+#							sprite.texture = preload("res://assets/action_line.png")
+#							sprite.modulate = c;
+#							sprite.fadeout_timer_max = 1.6;
+#							sprite.rotation = gamelogic.rng.randf_range(0, PI*2);
+#							sprite.velocity = Vector2(0, -gamelogic.rng.randf_range(8, 16)).rotated(sprite.rotation);
+#							sprite.scale = Vector2(2.0, 2.0);
+#						sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+#						sprite.position -= sprite.velocity*2;
+#						sprite.centered = true;
+#						gamelogic.overactorsparticles.add_child(sprite);
+#				if (self.actorname == Name.Star):
+#					frame = clamp(3 + round((animation_timer / animation_timer_max)*2), 3, 5);
+#				if (animation_timer > animation_timer_max):
+#					if (self.actorname == Name.Star):
+#						frame = 0;
+#					is_done = true;
+#				else:
+#					is_done = false;
 			11: #sing
-				animation_timer_max = 1.0;
-				var old_animation_timer_tick = int(animation_timer*5);
-				var old_animation_timer = animation_timer;
-				animation_timer += delta;
-				var new_animation_timer_tick = int(animation_timer*5);
-				if (old_animation_timer == 0 or old_animation_timer_tick != new_animation_timer_tick):
-					var sprite = Sprite.new();
-					sprite.set_script(preload("res://FadingSprite.gd"));
-					sprite.texture = preload("res://assets/note_particle.png")
-					sprite.hframes = 2;
-					sprite.vframes = 1;
-					sprite.frame = gamelogic.rng.randi_range(0, sprite.hframes - 1);
-					sprite.fadeout_timer_max = 0.8;
-					sprite.velocity = Vector2(0, -gamelogic.rng.randf_range(16, 32)).rotated(gamelogic.rng.randf_range(-0.5, 0.5));
-					sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
-					sprite.position += sprite.velocity*0.4;
-					sprite.position.x += gamelogic.rng.randf_range(-8, 8);
-					sprite.centered = true;
-					sprite.sine_mult = 7.0;
-					sprite.sine_offset = 3.0;
-					sprite.sine_timer = gamelogic.rng.randf_range(0.0, 100.0);
-					gamelogic.overactorsparticles.add_child(sprite);
-				if animation_timer > animation_timer_max:
-					is_done = true;
-				else:
-					is_done = false;
-					var adjusted_frame = 5 + new_animation_timer_tick % 2;
-					frame = base_frame + adjusted_frame;
-			12: #fall
-				if (animation_timer == 0):
-					gamelogic.play_sound("plummet");
-				animation_timer_max = 0.5;
-				var old_animation_timer_tick = int(animation_timer*10);
-				animation_timer += delta;
-				var new_animation_timer_tick = int(animation_timer*10);
-				var hole = null;
-				if (gamelogic.hole_sprites.has(pos)):
-					hole = gamelogic.hole_sprites[pos];
-				if (hole != null):
-					if actorname == Name.Player:
-						hole.frame = hole.hframes;
-						# TODO: do player kick here
-					elif (actorname == Name.WonderBlock):
-						hole.frame = hole.hframes*2;
-					else:
-						hole.frame = 0;
-					hole.frame += clamp(floor((animation_timer/animation_timer_max)*hole.hframes), 0, hole.hframes-1);
-				if (old_animation_timer_tick != new_animation_timer_tick):
-					var sprite = Sprite.new();
-					sprite.set_script(preload("res://FadingSprite.gd"));
-					sprite.texture = preload("res://assets/action_line.png")
-					sprite.modulate = Color("A7A79E")
-					sprite.fadeout_timer_max = 0.4;
-					sprite.velocity = Vector2(0, -32)
-					sprite.position = position;
-					sprite.position.x += gamelogic.rng.randf_range(gamelogic.cell_size*0.25, gamelogic.cell_size*0.75);
-					sprite.centered = true;
-					gamelogic.overactorsparticles.add_child(sprite);
-				self.modulate.a = 1.0-(animation_timer/animation_timer_max);
-				if animation_timer > animation_timer_max:
-					is_done = true;
-					gamelogic.play_sound("crashland");
-					if (hole != null):
-						hole.queue_free();
-						gamelogic.hole_sprites.erase(pos);
-					for i in range(10):
-						var sprite = Sprite.new();
-						sprite.set_script(preload("res://FadingSprite.gd"));
-						sprite.texture = preload("res://assets/dust.png")
-						sprite.hframes = 8;
-						sprite.vframes = 1;
-						sprite.frame = gamelogic.rng.randi_range(0, sprite.hframes - 1);
-						sprite.fadeout_timer_max = 0.4;
-						sprite.velocity = Vector2(gamelogic.rng.randf_range(16, 32), 0).rotated(gamelogic.rng.randf_range(0, PI*2));
-						sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
-						sprite.centered = true;
-						gamelogic.overactorsparticles.add_child(sprite);
-				else:
-					if (actorname == Name.Player):
-						var adjusted_frame = 1 + (new_animation_timer_tick % 2)*2;
-						frame = base_frame + adjusted_frame;
-					is_done = false;
+				is_done = true;
+#				animation_timer_max = 1.0;
+#				var old_animation_timer_tick = int(animation_timer*5);
+#				var old_animation_timer = animation_timer;
+#				animation_timer += delta;
+#				var new_animation_timer_tick = int(animation_timer*5);
+#				if (old_animation_timer == 0 or old_animation_timer_tick != new_animation_timer_tick):
+#					var sprite = Sprite.new();
+#					sprite.set_script(preload("res://FadingSprite.gd"));
+#					sprite.texture = preload("res://assets/note_particle.png")
+#					sprite.hframes = 2;
+#					sprite.vframes = 1;
+#					sprite.frame = gamelogic.rng.randi_range(0, sprite.hframes - 1);
+#					sprite.fadeout_timer_max = 0.8;
+#					sprite.velocity = Vector2(0, -gamelogic.rng.randf_range(16, 32)).rotated(gamelogic.rng.randf_range(-0.5, 0.5));
+#					sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+#					sprite.position += sprite.velocity*0.4;
+#					sprite.position.x += gamelogic.rng.randf_range(-8, 8);
+#					sprite.centered = true;
+#					sprite.sine_mult = 7.0;
+#					sprite.sine_offset = 3.0;
+#					sprite.sine_timer = gamelogic.rng.randf_range(0.0, 100.0);
+#					gamelogic.overactorsparticles.add_child(sprite);
+#				if animation_timer > animation_timer_max:
+#					is_done = true;
+#				else:
+#					is_done = false;
+#					var adjusted_frame = 5 + new_animation_timer_tick % 2;
+#					frame = base_frame + adjusted_frame;
+#			12: #fall
+#				if (animation_timer == 0):
+#					gamelogic.play_sound("plummet");
+#				animation_timer_max = 0.5;
+#				var old_animation_timer_tick = int(animation_timer*10);
+#				animation_timer += delta;
+#				var new_animation_timer_tick = int(animation_timer*10);
+#				var hole = null;
+#				if (gamelogic.hole_sprites.has(pos)):
+#					hole = gamelogic.hole_sprites[pos];
+#				if (hole != null):
+#					if actorname == Name.Player:
+#						hole.frame = hole.hframes;
+#						# TODO: do player kick here
+#					elif (actorname == Name.WonderBlock):
+#						hole.frame = hole.hframes*2;
+#					else:
+#						hole.frame = 0;
+#					hole.frame += clamp(floor((animation_timer/animation_timer_max)*hole.hframes), 0, hole.hframes-1);
+#				if (old_animation_timer_tick != new_animation_timer_tick):
+#					var sprite = Sprite.new();
+#					sprite.set_script(preload("res://FadingSprite.gd"));
+#					sprite.texture = preload("res://assets/action_line.png")
+#					sprite.modulate = Color("A7A79E")
+#					sprite.fadeout_timer_max = 0.4;
+#					sprite.velocity = Vector2(0, -32)
+#					sprite.position = position;
+#					sprite.position.x += gamelogic.rng.randf_range(gamelogic.cell_size*0.25, gamelogic.cell_size*0.75);
+#					sprite.centered = true;
+#					gamelogic.overactorsparticles.add_child(sprite);
+#				self.modulate.a = 1.0-(animation_timer/animation_timer_max);
+#				if animation_timer > animation_timer_max:
+#					is_done = true;
+#					gamelogic.play_sound("crashland");
+#					if (hole != null):
+#						hole.queue_free();
+#						gamelogic.hole_sprites.erase(pos);
+#					for i in range(10):
+#						var sprite = Sprite.new();
+#						sprite.set_script(preload("res://FadingSprite.gd"));
+#						sprite.texture = preload("res://assets/dust.png")
+#						sprite.hframes = 8;
+#						sprite.vframes = 1;
+#						sprite.frame = gamelogic.rng.randi_range(0, sprite.hframes - 1);
+#						sprite.fadeout_timer_max = 0.4;
+#						sprite.velocity = Vector2(gamelogic.rng.randf_range(16, 32), 0).rotated(gamelogic.rng.randf_range(0, PI*2));
+#						sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+#						sprite.centered = true;
+#						gamelogic.overactorsparticles.add_child(sprite);
+#				else:
+#					if (actorname == Name.Player):
+#						var adjusted_frame = 1 + (new_animation_timer_tick % 2)*2;
+#						frame = base_frame + adjusted_frame;
+#					is_done = false;
 			13: #intro
 				facing_dir = Vector2.RIGHT;
 				base_frame = 0;

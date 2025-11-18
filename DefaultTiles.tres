@@ -1,7 +1,6 @@
 [gd_resource type="TileSet" load_steps=25 format=2]
 
 [ext_resource path="res://assets/splice_flower.png" type="Texture" id=1]
-[ext_resource path="res://assets/floor.png" type="Texture" id=2]
 [ext_resource path="res://assets/player.png" type="Texture" id=3]
 [ext_resource path="res://assets/dirt_block.png" type="Texture" id=4]
 [ext_resource path="res://assets/wall.png" type="Texture" id=5]
@@ -20,6 +19,9 @@
 [ext_resource path="res://assets/one_way_south_3.png" type="Texture" id=18]
 [ext_resource path="res://assets/one_way_west_3.png" type="Texture" id=19]
 [ext_resource path="res://assets/one_way_east_3.png" type="Texture" id=20]
+
+[sub_resource type="StreamTexture" id=5]
+load_path = "res://.import/floor.png-38406586736af2fe805d7b886727ee47.stex"
 
 [sub_resource type="AnimatedTexture" id=1]
 frames = 3
@@ -55,7 +57,7 @@ frame_2/delay_sec = 0.0
 
 [resource]
 0/name = "Floor"
-0/texture = ExtResource( 2 )
+0/texture = SubResource( 5 )
 0/tex_offset = Vector2( 0, 0 )
 0/modulate = Color( 1, 1, 1, 1 )
 0/region = Rect2( 0, 0, 16, 16 )
