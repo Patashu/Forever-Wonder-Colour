@@ -4,7 +4,7 @@ class_name SparkleSpawner
 var sparkle_timer = 0;
 var sparkle_timer_max = 0.1;
 var end = 1;
-var color = Color("DBC1AF");
+var color = Color("FFEBD8");
 onready var gamelogic = get_tree().get_root().find_node("LevelScene", true, false).gamelogic;
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
