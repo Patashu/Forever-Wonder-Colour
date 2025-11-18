@@ -95,6 +95,7 @@ enum Anim {
 	outro, #8
 	spliceflower, #9
 	wonderchange, #10
+	emoticon, #11
 }
 
 enum Greenness {
@@ -1250,6 +1251,8 @@ func prepare_audio() -> void:
 	#new SFX
 	sounds["spliceflower"] = preload("res://sfx/spliceflower.ogg");
 	sounds["wonderchange"] = preload("res://sfx/wonderchange.ogg");
+	sounds["whereblock"] = preload("res://sfx/whereblock.ogg");
+	sounds["surpriseblock"] = preload("res://sfx/surpriseblock.ogg");
 	#sounds["intro"] = preload("res://sfx/intro.ogg");
 	#sounds["outro"] = preload("res://sfx/outro.ogg");
 	
@@ -2244,7 +2247,6 @@ func increment_iteration() -> void:
 		pass
 	# NOW we can set this to true *facepalms*
 	is_resimulating = true;
-	#TODO: any special animations
 	#move everything to home position and state
 	for actor in actors:
 		if (actor.actorname != Actor.Name.WonderBlock and actor.actorname != Actor.Name.DepthDoor):
@@ -2263,12 +2265,24 @@ func increment_iteration() -> void:
 		resimulation_turn = h_i;
 		var h = history_moves[h_i];
 		var h_lower = h.to_lower();
+		var was_push = h_lower != h;
 		var dir = char_to_dir[h_lower];
 		animation_substep(Chrono.MOVE);
 		add_to_animation_server(player, [Anim.sfx, "step"]);
-		move_actor_relative(player, dir, Chrono.MOVE,
+		var success = move_actor_relative(player, dir, Chrono.MOVE,
 		false, false, [], false, true);
-		# TODO: emoticon reactions
+		var now_push = TEMP_didpush;
+		TEMP_didpush = false;
+		# emoticon reactions
+		if (success != Success.Yes):
+			if (was_push):
+				add_to_animation_server(player, [Anim.emoticon, "?!"], true);
+			else:
+				add_to_animation_server(player, [Anim.emoticon, "!!"], true);
+		elif (was_push and !now_push):
+			add_to_animation_server(player, [Anim.emoticon, "?"], true);
+		elif (!was_push and now_push):
+			add_to_animation_server(player, [Anim.emoticon, "!"], true);
 		# splice flower interrupts
 		if (TEMP_steppedonspliceflower):
 			splice_flower();
@@ -2600,7 +2614,16 @@ func add_to_animation_server(actor: ActorBase, animation: Array, with_priority: 
 	while animation_server.size() <= animation_substep:
 		animation_server.push_back([]);
 	if (with_priority):
-		animation_server[animation_substep].push_front([actor, animation]);
+		# hack: don't insert before Anim.emoticon
+		var anims = animation_server[animation_substep];
+		if (anims.size() == 0):
+			anims.push_front([actor, animation]);
+		else:
+			for i in range(anims.size()):
+				var anim = anims[i];
+				if (anim[1][0] != Anim.emoticon):
+					anims.insert(i, [actor, animation]);
+					break;
 	else:
 		animation_server[animation_substep].push_back([actor, animation]);
 
@@ -2657,7 +2680,7 @@ func update_animation_server(skip_globals: bool = false) -> void:
 		else:
 			animation[0].animations.push_back(animation[1]);
 
-func floating_text(text: String, reverse: bool = false) -> void:
+func floating_text(text: String, float_from: Vector2 = Vector2.ZERO) -> void:
 	if (!ready_done):
 		return
 	var label = preload("res://FloatingText.tscn").instance();
@@ -2666,14 +2689,15 @@ func floating_text(text: String, reverse: bool = false) -> void:
 		if i is FloatingText:
 			existing_labels += 1;
 	levelscene.add_child(label);
-	label.rect_position.x = 0;
 	label.rect_size.x = pixel_width;
-	label.rect_position.y = pixel_height/2-16 + 8*existing_labels;
+	if (float_from != Vector2.ZERO):
+		label.timer = 0.0;
+		label.rect_position.x = float_from.x-label.rect_size.x/2;
+		label.rect_position.y = float_from.y;
+	else:
+		label.rect_position.x = 0;
+		label.rect_position.y = pixel_height/2-16 + 8*existing_labels;
 	label.text = text;
-	if (reverse):
-		label.rect_position.y -= 60;
-		label.reversed = true;
-		label.modulate = Color(1, 1, 1, 0);
 
 func is_valid_replay(replay: String) -> bool:
 	var replay_parts = replay.split("$");

@@ -344,6 +344,14 @@ func _process(delta: float) -> void:
 					node2d.set_script(preload("res://CoolCircle.gd"));
 					node2d.position = self.position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
 					gamelogic.overactorsparticles.add_child(node2d);
+			11:
+				var text = current_animation[1];
+				gamelogic.floating_text(text,
+				self.global_position + Vector2(gamelogic.cell_size/2, -gamelogic.cell_size/2))
+				if (text == "!"):
+					gamelogic.play_sound("surpriseblock");
+				elif (text == "?"):
+					gamelogic.play_sound("whereblock");
 		if (is_done):
 			animations.pop_front();
 			animation_timer = 0;

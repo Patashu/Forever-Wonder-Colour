@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/whereblock.ogg-0c59d251b44a3e040d9851131a7188f1.oggstr"
+
+[deps]
+
+source_file="res://sfx/whereblock.ogg"
+dest_files=[ "res://.import/whereblock.ogg-0c59d251b44a3e040d9851131a7188f1.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0
