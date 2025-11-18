@@ -1270,6 +1270,7 @@ func prepare_audio() -> void:
 	sounds["voidundo"] = preload("res://sfx/voidundo.ogg");
 	sounds["step"] = preload("res://sfx/step.ogg");
 	sounds["switch"] = preload("res://sfx/switch.ogg");
+	sounds["usegreenality"] = preload("res://sfx/usegreenality.ogg");
 
 	#music_tracks.append(preload("res://music/Mind Palace.ogg"));
 	#music_info.append("Patashu - Mind Palace");
@@ -1389,7 +1390,7 @@ is_move: bool = false, can_push: bool = true) -> int:
 			add_to_animation_server(actor, [Anim.spliceflower]);
 			TEMP_steppedonspliceflower = true;
 			tutorial_complete = true;
-			if (!lore2_shown and !doing_replay):
+			if (!lore2_shown and !doing_replay and !in_insight_level):
 				lore2_shown = true;
 				var a = preload("res://Lore2.tscn").instance();
 				add_to_ui_stack(a);
@@ -1771,7 +1772,7 @@ func check_won(chrono: int) -> void:
 	
 	if (!locked and on_goal):
 		won = true;
-		if (!lore3_shown and !doing_replay):
+		if (!lore3_shown and !doing_replay and !in_insight_level):
 			lore3_shown = true;
 			var a = preload("res://Lore3.tscn").instance();
 			add_to_ui_stack(a);
@@ -2855,6 +2856,7 @@ func gain_insight() -> void:
 			return;
 	
 	if (has_insight_level):
+		tutorial_complete = true;
 		end_replay(); #not sure why Unwin needs this but ET didn't?
 		if (in_insight_level):
 			in_insight_level = false;

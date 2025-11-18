@@ -112,7 +112,6 @@ focus_neighbour_left = NodePath("../QuitGameButton")
 text = "Restart"
 
 [node name="InsightButton" type="Button" parent="Holder"]
-visible = false
 margin_left = 9.0
 margin_top = 139.0
 margin_right = 74.0
@@ -136,5 +135,5 @@ margin_left = 12.0
 margin_top = 126.0
 margin_right = 160.0
 margin_bottom = 137.0
-text = "Stuck? Here's help:"
+text = "Stuck? Try these:"
 align = 1
