@@ -202,6 +202,7 @@ func _process(delta: float) -> void:
 				frame += 4;
 			
 	elif actorname == Name.WonderBlock:
+		#TODO: different idea
 		if moving != Vector2.ZERO:
 			frame_timer += delta;
 			if (frame_timer > frame_timer_max):
