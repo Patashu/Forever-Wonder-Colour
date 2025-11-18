@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/spliceflower.ogg-13f30d6e0a9cbbc813fc820871688683.oggstr"
+
+[deps]
+
+source_file="res://sfx/spliceflower.ogg"
+dest_files=[ "res://.import/spliceflower.ogg-13f30d6e0a9cbbc813fc820871688683.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

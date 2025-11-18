@@ -93,6 +93,7 @@ enum Anim {
 	stall, #6
 	intro, #7
 	outro, #8
+	spliceflower, #9
 }
 
 enum Greenness {
@@ -1242,11 +1243,14 @@ func prepare_audio() -> void:
 	# TODO: I could automate this if I can iterate the folder
 	# TODO: replace this with an enum and assert on startup like tiles
 	
+	#new SFX
+	sounds["spliceflower"] = preload("res://sfx/spliceflower.ogg");
+	#sounds["intro"] = preload("res://sfx/intro.ogg");
+	#sounds["outro"] = preload("res://sfx/outro.ogg");
+	
 	#old SFX still in use (afaik
 	sounds["involuntarybumpother"] = preload("res://sfx/involuntarybumpother.ogg");
 	sounds["bump"] = preload("res://sfx/bump.ogg");
-	#sounds["intro"] = preload("res://sfx/intro.ogg");
-	#sounds["outro"] = preload("res://sfx/outro.ogg");
 	sounds["push"] = preload("res://sfx/push.ogg");
 	sounds["undostrong"] = preload("res://sfx/undostrong.ogg");
 	sounds["metaredo"] = preload("res://sfx/metaredo.ogg");
@@ -1371,6 +1375,7 @@ is_move: bool = false, can_push: bool = true) -> int:
 		if terrain.has(Tiles.SpliceFlower):
 			maybe_change_terrain(actor, actor.pos, terrain.find(Tiles.SpliceFlower),
 			hypothetical, Greenness.Mundane, Chrono.MOVE, -1);
+			add_to_animation_server(actor, [Anim.spliceflower]);
 			TEMP_steppedonspliceflower = true;
 			tutorial_complete = true;
 	return result;
@@ -2618,8 +2623,9 @@ func update_animation_server(skip_globals: bool = false) -> void:
 				add_to_animation_server(player, [Anim.fade, 1.0, 0.0, 3.0]);
 			else:
 				Shade.on = true;
-				add_to_animation_server(player, [Anim.sing]);
-				add_to_animation_server(player, [Anim.outro, 2.2]);
+				#add_to_animation_server(player, [Anim.sing]);
+				#add_to_animation_server(player, [Anim.outro, 2.2]);
+				add_to_animation_server(player, [Anim.fade, 1.0, 0.0, 3.0]);
 		return;
 	
 	# we found new animations - give them to everyone at once

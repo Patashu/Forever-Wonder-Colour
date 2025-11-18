@@ -16,6 +16,10 @@ var door_depth: int = 0
 # sparkles
 var sparkle_timer : float = 0.0;
 var sparkle_timer_max : float = 1.2;
+# splice flower ripple
+var ripple = null;
+var ripple_timer : float = 0.0;
+var ripple_timer_max : float = 2.0;
 # animation system logic
 var animation_timer : float = 0.0;
 var animation_timer_max : float = 0.05;
@@ -162,6 +166,18 @@ func _process(delta: float) -> void:
 				sprite.modulate = Color("FFEBD8");
 			self.add_child(sprite)
 	
+	#splice flower ripple
+	if (ripple != null):
+		ripple_timer += delta;
+		if (ripple_timer > ripple_timer_max):
+			ripple.queue_free();
+			ripple = null;
+		else:
+			ripple.get_material().set_shader_param("height", ((ripple_timer_max-ripple_timer)/ripple_timer_max)*0.003);
+			#child.get_material().set_shader_param("color", undo_color);
+			#child.get_material().set_shader_param("mixture", 1.0);
+	
+	
 	#animated sprites
 	if actorname == Name.Player:
 		if moving != Vector2.ZERO:
@@ -296,6 +312,23 @@ func _process(delta: float) -> void:
 				is_done = true;
 			8: #outro
 				is_done = true;
+			9: #spliceflower
+				gamelogic.play_sound("spliceflower");
+				if (animation_timer < 99): #don't make ripples while a replay is going fast
+					# particles
+					for i in range(8):
+						var sprite = Sprite.new();
+						sprite.set_script(preload("res://FadingSprite.gd"));
+						sprite.texture = preload("res://assets/SpliceFlowerTexture.tres");
+						sprite.position = Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+						sprite.centered = true;
+						sprite.fadeout_timer_max = 2.0;
+						sprite.velocity = Vector2(16, 0).rotated(i*PI/4);
+						self.add_child(sprite);
+					ripple = preload("res://Ripple.tscn").instance();
+					ripple_timer = 0;
+					ripple.rect_position += Vector2(12, 12);
+					self.add_child(ripple);
 		if (is_done):
 			animations.pop_front();
 			animation_timer = 0;
