@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=25 format=2]
 
 [ext_resource path="res://assets/splice_flower.png" type="Texture" id=1]
 [ext_resource path="res://assets/floor.png" type="Texture" id=2]
@@ -8,10 +8,50 @@
 [ext_resource path="res://assets/dirt_block.png" type="Texture" id=6]
 [ext_resource path="res://assets/depth_door_1.png" type="Texture" id=7]
 [ext_resource path="res://assets/ice_block.png" type="Texture" id=8]
-[ext_resource path="res://assets/one_way_east.png" type="Texture" id=15]
-[ext_resource path="res://assets/one_way_west.png" type="Texture" id=16]
-[ext_resource path="res://assets/one_way_south.png" type="Texture" id=17]
-[ext_resource path="res://assets/one_way_north.png" type="Texture" id=18]
+[ext_resource path="res://assets/one_way_west_2.png" type="Texture" id=9]
+[ext_resource path="res://assets/one_way_west_1.png" type="Texture" id=10]
+[ext_resource path="res://assets/one_way_west_3.png" type="Texture" id=11]
+[ext_resource path="res://assets/one_way_north_2.png" type="Texture" id=12]
+[ext_resource path="res://assets/one_way_east_2.png" type="Texture" id=13]
+[ext_resource path="res://assets/one_way_east_1.png" type="Texture" id=14]
+[ext_resource path="res://assets/one_way_north_1.png" type="Texture" id=15]
+[ext_resource path="res://assets/one_way_south_1.png" type="Texture" id=16]
+[ext_resource path="res://assets/one_way_south_2.png" type="Texture" id=17]
+[ext_resource path="res://assets/one_way_north_3.png" type="Texture" id=18]
+[ext_resource path="res://assets/one_way_south_3.png" type="Texture" id=19]
+[ext_resource path="res://assets/one_way_east_3.png" type="Texture" id=20]
+
+[sub_resource type="AnimatedTexture" id=1]
+frames = 3
+frame_0/texture = ExtResource( 10 )
+frame_1/texture = ExtResource( 9 )
+frame_1/delay_sec = 0.0
+frame_2/texture = ExtResource( 11 )
+frame_2/delay_sec = 0.0
+
+[sub_resource type="AnimatedTexture" id=2]
+frames = 3
+frame_0/texture = ExtResource( 16 )
+frame_1/texture = ExtResource( 17 )
+frame_1/delay_sec = 0.0
+frame_2/texture = ExtResource( 19 )
+frame_2/delay_sec = 0.0
+
+[sub_resource type="AnimatedTexture" id=3]
+frames = 3
+frame_0/texture = ExtResource( 15 )
+frame_1/texture = ExtResource( 12 )
+frame_1/delay_sec = 0.0
+frame_2/texture = ExtResource( 18 )
+frame_2/delay_sec = 0.0
+
+[sub_resource type="AnimatedTexture" id=4]
+frames = 3
+frame_0/texture = ExtResource( 14 )
+frame_1/texture = ExtResource( 13 )
+frame_1/delay_sec = 0.0
+frame_2/texture = ExtResource( 20 )
+frame_2/delay_sec = 0.0
 
 [node name="TileSetScene" type="Node2D"]
 
@@ -41,19 +81,19 @@ texture = ExtResource( 8 )
 
 [node name="OneWayWest" type="Sprite" parent="."]
 position = Vector2( 199, 76 )
-texture = ExtResource( 16 )
+texture = SubResource( 1 )
 
 [node name="OneWaySouth" type="Sprite" parent="."]
 position = Vector2( 208, 77 )
-texture = ExtResource( 17 )
+texture = SubResource( 2 )
 
 [node name="OneWayNorth" type="Sprite" parent="."]
 position = Vector2( 225, 76 )
-texture = ExtResource( 18 )
+texture = SubResource( 3 )
 
 [node name="OneWayEast" type="Sprite" parent="."]
 position = Vector2( 237, 76 )
-texture = ExtResource( 15 )
+texture = SubResource( 4 )
 
 [node name="SpliceFlower" type="Sprite" parent="."]
 position = Vector2( 132, 111 )

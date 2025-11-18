@@ -1162,7 +1162,7 @@ func find_goals() -> void:
 			var goal = Goal.new();
 			goal.gamelogic = self;
 			goal.actorname = Actor.Name.Goal;
-			goal.texture = preload("res://assets/win.png");
+			goal.texture = preload("res://assets/win_spritesheet.png");
 			goal.centered = true;
 			goal.pos = tile;
 			goal.position = terrainmap.map_to_world(goal.pos) + Vector2(cell_size/2, cell_size/2);
