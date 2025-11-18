@@ -258,7 +258,7 @@ var chapter_standard_starting_levels : Array = [];
 var chapter_advanced_starting_levels : Array = [];
 var chapter_standard_unlock_requirements : Array = [];
 var chapter_advanced_unlock_requirements : Array = [];
-var save_file_string : String = "user://unwin.sav";
+var save_file_string : String = "user://fwc.sav";
 
 var is_web : bool = false;
 
@@ -1685,7 +1685,7 @@ is_retro: bool = false, _retro_old_value = null) -> void:
 
 func add_undo_event(event: Array, chrono: int = Chrono.MOVE) -> void:
 	#if (debug_prints and chrono < Chrono.META_UNDO):
-	# print("add_undo_event", " ", event, " ", chrono, " ", is_winunwin);
+	# print("add_undo_event", " ", event, " ", chrono);
 
 	if (chrono <= Chrono.MOVE):
 		while (meta_undo_buffer.size() <= meta_turn):
