@@ -94,6 +94,7 @@ enum Anim {
 	intro, #7
 	outro, #8
 	spliceflower, #9
+	wonderchange, #10
 }
 
 enum Greenness {
@@ -1248,6 +1249,7 @@ func prepare_audio() -> void:
 	
 	#new SFX
 	sounds["spliceflower"] = preload("res://sfx/spliceflower.ogg");
+	sounds["wonderchange"] = preload("res://sfx/wonderchange.ogg");
 	#sounds["intro"] = preload("res://sfx/intro.ogg");
 	#sounds["outro"] = preload("res://sfx/outro.ogg");
 	
@@ -1372,6 +1374,7 @@ is_move: bool = false, can_push: bool = true) -> int:
 		set_actor_var(actor, "home_pos", actor.pos, chrono);
 		if (chrono == Chrono.MOVE):
 			TEMP_wonderchanged = true;
+			add_to_animation_server(actor, [Anim.wonderchange], true);
 			
 	if (!hypothetical and result == Success.Yes and actor.actorname == Actor.Name.Player and chrono == Chrono.MOVE):
 		var terrain = terrain_in_tile(actor.pos, actor, Chrono.MOVE);
@@ -1421,7 +1424,7 @@ is_move: bool = false, can_push: bool = true) -> int:
 				TEMP_didpush = true;
 				player.exerting = true;
 		
-		add_to_animation_server(actor, [Anim.move, dir, is_retro]);
+		add_to_animation_server(actor, [Anim.move, dir, is_retro, false]);
 
 		return success;
 	elif (success != Success.Yes):
@@ -2307,8 +2310,7 @@ func reset_to_home(actor: Actor) -> void:
 		actor.pos = actor.home_pos;
 		add_undo_event([Undo.move, actor, dir, false],
 		chrono_for_maybe_green_actor(actor, Chrono.MOVE));
-		# TODO: needs a special animation
-		add_to_animation_server(actor, [Anim.move, dir, false]);
+		add_to_animation_server(actor, [Anim.move, dir, false, true], true);
 
 var char_to_dir : Dictionary = { "w": Vector2.UP, "a": Vector2.LEFT, "s": Vector2.DOWN, "d": Vector2.RIGHT };
 

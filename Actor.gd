@@ -211,7 +211,6 @@ func _process(delta: float) -> void:
 				frame += 4;
 			
 	elif actorname == Name.WonderBlock:
-		#TODO: different idea
 		if moving != Vector2.ZERO:
 			frame_timer += delta;
 			if (frame_timer > frame_timer_max):
@@ -219,12 +218,15 @@ func _process(delta: float) -> void:
 				# spawn an ice puff
 				var sprite = Sprite.new();
 				sprite.set_script(preload("res://FadingSprite.gd"));
-				sprite.texture = preload("res://assets/pixel.png");
+				sprite.texture = preload("res://assets/sparkle.png");
 				sprite.fadeout_timer_max = 0.8;
 				sprite.velocity = (-moving*gamelogic.rng.randf_range(8, 16)).rotated(gamelogic.rng.randf_range(-0.5, 0.5));
 				sprite.position = position + Vector2(gamelogic.rng.randf_range(gamelogic.cell_size*1/4, gamelogic.cell_size*3/4), gamelogic.rng.randf_range(gamelogic.cell_size*1/4, gamelogic.cell_size*3/4));
 				sprite.centered = true;
-				sprite.scale = Vector2(2, 2);
+				sprite.scale = Vector2(0.25, 0.25);
+				sprite.modulate = Color("FF7F00");
+				if (gamelogic.rng.randi_range(0, 1) == 1):
+					sprite.modulate = Color("FFEBD8");
 				gamelogic.overactorsparticles.add_child(sprite);
 	
 	# animation system stuff
@@ -235,6 +237,7 @@ func _process(delta: float) -> void:
 		match current_animation[0]:
 			0: #move
 				moving = current_animation[1];
+				var wonder = current_animation[3];
 				# afterimage if it was a retro move
 				if (animation_timer == 0):
 					frame_timer = 0;
@@ -248,6 +251,8 @@ func _process(delta: float) -> void:
 				animation_timer_max = 0.09*slow_mo;
 				position -= current_animation[1]*(animation_timer/animation_timer_max)*gamelogic.cell_size;
 				animation_timer += delta;
+				if (wonder):
+					animation_timer = 99;
 				if (animation_timer > animation_timer_max):
 					position += current_animation[1]*1*gamelogic.cell_size;
 					# no rounding errors here! get rounded sucker!
@@ -329,6 +334,15 @@ func _process(delta: float) -> void:
 					ripple_timer = 0;
 					ripple.rect_position += Vector2(12, 12);
 					self.add_child(ripple);
+			10: #wonderchange
+				gamelogic.play_sound("wonderchange");
+				gamelogic.undo_effect_strength = 0.4;
+				gamelogic.undo_effect_per_second = gamelogic.undo_effect_strength*(1);
+				gamelogic.undo_effect_color = gamelogic.red_color;
+				var node2d = Node2D.new();
+				node2d.set_script(preload("res://CoolCircle.gd"));
+				node2d.position = self.position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+				gamelogic.overactorsparticles.add_child(node2d);
 		if (is_done):
 			animations.pop_front();
 			animation_timer = 0;
