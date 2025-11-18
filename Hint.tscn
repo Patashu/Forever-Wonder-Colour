@@ -16,12 +16,13 @@ theme = ExtResource( 2 )
 custom_styles/normal = ExtResource( 1 )
 text = "Rules Overview
 
-* All Sokoban rules apply, except to win you collect all Stars then step on the Goal.
-* Collecting a star is not Undoable. Instead, the order in which you collect stars is remembered, and Unwin will uncollect the most recently collected star(s).
-* Blocks can't push blocks. However, Stars are solid and can push and be pushed by everything, except the Player (who would rather collect them).
-* An Ice Block that moves attempts to move again (unless it's over a Hole).
-* At the end of each turn, Holes with a Player or Block on their tile destroy each other. Bottomless Pits (hole with red infinity symbol) are just indestructible Holes.
-* Collecting a star melts all Ice Blocks in the surrounding 3x3 area. The melting can be Undone, the collection can be Unwon. You can choose to do one, both or neither.
+* All Sokoban rules apply, except the win condition is reaching the Goal.
+* One-Ways prevent movement in one direction.
+* Wonder Blocks (orange), when pushed, cause history to re-simulate as though they were always in the new position at 'Depth 1'.
+* (Note that unsuccessful moves are not a part of history, and thus won't be replayed, but a previously successful move may fail or do something different.)
+* A Wonder Block changing position while already re-simulating history will truncate history at that move and start a deeper re-simulation (Depth 2, 3 and so on).
+* Depth Doors close when the current Depth reaches their displayed number. (Negative numbers: -1 opens when the current Depth reaches 1+, and so on.)
+* Stepping on a Splice Flower consumes it and set the current state as 'Turn 0', erasing prior history.
 * Custom Puzzles may have non-vanilla elements. Refer to the Level Editor (or experiment) to learn what they do."
 align = 1
 autowrap = true

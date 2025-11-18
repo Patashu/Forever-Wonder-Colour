@@ -1818,7 +1818,7 @@ func check_won(chrono: int) -> void:
 		elif !(doing_replay):
 			then += "\nOr try custom puzzles! (link in itch.io description)";
 		if !doing_replay:
-			winlabel.change_text("You have won!\nProgramming: Patashu\nGraphics: Teal Knight\n[" + human_readable_input("ui_accept", 1) + "]: " + then);
+			winlabel.change_text("You have won!\nMade by Patashu\nGraphics by Teal Knight\n[" + human_readable_input("ui_accept", 1) + "]: " + then);
 		elif doing_replay:
 			winlabel.change_text("You have won!\n\n[" + human_readable_input("ui_accept", 1) + "]: " + then)
 		won_fade_started = false;
