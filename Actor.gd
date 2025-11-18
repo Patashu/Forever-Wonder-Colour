@@ -336,13 +336,14 @@ func _process(delta: float) -> void:
 					self.add_child(ripple);
 			10: #wonderchange
 				gamelogic.play_sound("wonderchange");
-				gamelogic.undo_effect_strength = 0.4;
-				gamelogic.undo_effect_per_second = gamelogic.undo_effect_strength*(1);
-				gamelogic.undo_effect_color = gamelogic.red_color;
-				var node2d = Node2D.new();
-				node2d.set_script(preload("res://CoolCircle.gd"));
-				node2d.position = self.position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
-				gamelogic.overactorsparticles.add_child(node2d);
+				if (animation_timer < 99): #my eyes
+					gamelogic.undo_effect_strength = 0.4;
+					gamelogic.undo_effect_per_second = gamelogic.undo_effect_strength*(1);
+					gamelogic.undo_effect_color = gamelogic.red_color;
+					var node2d = Node2D.new();
+					node2d.set_script(preload("res://CoolCircle.gd"));
+					node2d.position = self.position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+					gamelogic.overactorsparticles.add_child(node2d);
 		if (is_done):
 			animations.pop_front();
 			animation_timer = 0;
