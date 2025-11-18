@@ -845,7 +845,10 @@ func initialize_shaders() -> void:
 	afterimage.position = Vector2(-99, -99);
 	
 func tile_changes(level_editor: bool = false) -> void:
-	pass
+	if (!level_editor):
+		terrainmap.tile_set.tile_set_texture(Tiles.Win, null);
+	else:
+		terrainmap.tile_set.tile_set_texture(Tiles.Win, preload("res://assets/win.png"));
 	
 func assert_tile_enum() -> void:
 	for i in range (Tiles.size()):
