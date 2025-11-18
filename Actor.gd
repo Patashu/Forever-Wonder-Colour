@@ -228,6 +228,25 @@ func _process(delta: float) -> void:
 				if (gamelogic.rng.randi_range(0, 1) == 1):
 					sprite.modulate = Color("FFEBD8");
 				gamelogic.overactorsparticles.add_child(sprite);
+	elif actorname == Name.StoneBlock:
+		if moving != Vector2.ZERO:
+			frame_timer += delta;
+			if (frame_timer > frame_timer_max):
+				frame_timer -= frame_timer_max;
+				# spawn a dust cloud
+				var sprite = Sprite.new();
+				sprite.set_script(preload("res://FadingSprite.gd"));
+				sprite.texture = preload("res://assets/dust.png")
+				sprite.fadeout_timer_max = 0.8;
+				sprite.velocity = (-moving*gamelogic.rng.randf_range(8, 16)).rotated(gamelogic.rng.randf_range(-0.5, 0.5));
+				sprite.position = position + Vector2(gamelogic.rng.randf_range(gamelogic.cell_size*1/4, gamelogic.cell_size*3/4), gamelogic.rng.randf_range(gamelogic.cell_size*1/4, gamelogic.cell_size*3/4));
+				sprite.hframes = 7;
+				sprite.frame = gamelogic.rng.randi_range(0, 6);
+				sprite.centered = true;
+				sprite.scale = Vector2(1.0, 1.0);
+				sprite.modulate = Color("FFEBD8");
+				gamelogic.underterrainfolder.add_child(sprite);
+		
 	
 	# animation system stuff
 	moving = Vector2.ZERO;
