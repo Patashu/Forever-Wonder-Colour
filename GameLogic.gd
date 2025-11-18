@@ -123,6 +123,13 @@ enum Tiles {
 	OneWayEast,
 	SpliceFlower,
 	DepthDoor,
+	NoPlayer,
+	NoStone,
+	NoWonder,
+	CrateGoal,
+	Spikes,
+	OrangeSpikes,
+	WhiteBlock
 }
 
 # information about the level
@@ -209,6 +216,7 @@ var undo_effect_color : Color = Color(0, 0, 0, 0);
 var red_color : Color = Color("FF7F00");
 var blue_color : Color = Color("4F67FF");
 var meta_color : Color = Color("FFEBD8");
+var black_color : Color = Color("19011A");
 var ui_stack : Array = [];
 var ready_done : bool = false;
 var using_controller : bool = false;
@@ -1531,12 +1539,39 @@ func try_enter_terrain(actor: Actor, pos: Vector2, chrono: int) -> int:
 				result = Success.No;
 			Tiles.OneWaySouth:
 				result = no_if_true_yes_if_false(pos.y < actor.pos.y);
+				if (result == Success.No):
+					flash_terrain = id;
+					flash_colour = meta_color;
 			Tiles.OneWayWest:
 				result = no_if_true_yes_if_false(pos.x > actor.pos.x);
+				if (result == Success.No):
+					flash_terrain = id;
+					flash_colour = meta_color;
 			Tiles.OneWayEast:
 				result = no_if_true_yes_if_false(pos.x < actor.pos.x);
+				if (result == Success.No):
+					flash_terrain = id;
+					flash_colour = meta_color;
 			Tiles.OneWayNorth:
 				result = no_if_true_yes_if_false(pos.y > actor.pos.y);
+				if (result == Success.No):
+					flash_terrain = id;
+					flash_colour = meta_color;
+			Tiles.NoPlayer:
+				result = no_if_true_yes_if_false(actor.actorname == Actor.Name.Player);
+				if (result == Success.No):
+					flash_terrain = id;
+					flash_colour = black_color;
+			Tiles.NoStone:
+				result = no_if_true_yes_if_false(actor.actorname == Actor.Name.StoneBlock);
+				if (result == Success.No):
+					flash_terrain = id;
+					flash_colour = meta_color;
+			Tiles.NoWonder:
+				result = no_if_true_yes_if_false(actor.actorname == Actor.Name.WonderBlock);
+				if (result == Success.No):
+					flash_terrain = id;
+					flash_colour = meta_color;
 		if result != Success.Yes:
 			return result;
 	return result;
@@ -1566,6 +1601,9 @@ func try_enter(actor: Actor, dir: Vector2, chrono: int, can_push: bool, hypothet
 	
 	var solidity_check = try_enter_terrain(actor, dest, chrono);
 	if (solidity_check != Success.Yes):
+		if (flash_terrain > -1):
+			add_to_animation_server(actor, [Anim.afterimage_at, terrainmap.tile_set.tile_get_texture(flash_terrain), terrainmap.map_to_world(dest), flash_colour]);
+			flash_terrain = -1;
 		return solidity_check;
 	
 	# handle pushing

@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/dirt_block.png-f5350d382de7eb682c17a20746b6d7a5.stex"
+path="res://.import/wonder_block.png-777c1e39b534a8fc0b6de28fa930e8dd.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dirt_block.png"
-dest_files=[ "res://.import/dirt_block.png-f5350d382de7eb682c17a20746b6d7a5.stex" ]
+source_file="res://assets/wonder_block.png"
+dest_files=[ "res://.import/wonder_block.png-777c1e39b534a8fc0b6de28fa930e8dd.stex" ]
 
 [params]
 

@@ -77,13 +77,13 @@ func get_next_texture() -> Texture:
 			if broken:
 				return null;
 			else:
-				return preload("res://assets/dirt_block.png");
+				return preload("res://assets/stone_block.png");
 				
 		Name.WonderBlock:
 			if broken:
 				return null;
 			else:
-				return preload("res://assets/ice_block.png");
+				return preload("res://assets/wonder_block.png");
 				
 		Name.DepthDoor:
 			if broken:

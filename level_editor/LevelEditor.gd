@@ -15,6 +15,13 @@ enum Tiles {
 	OneWayEast,
 	SpliceFlower,
 	DepthDoor,
+	NoPlayer,
+	NoStone,
+	NoWonder,
+	CrateGoal,
+	Spikes,
+	OrangeSpikes,
+	WhiteBlock
 }
 
 onready var gamelogic = get_tree().get_root().find_node("LevelScene", true, false).gamelogic;
@@ -126,6 +133,9 @@ func initialize_picker_array() -> void:
 	picker_array.append(Tiles.OneWayEast);
 	picker_array.append(Tiles.SpliceFlower);
 	picker_array.append(Tiles.DepthDoor);
+	picker_array.append(Tiles.NoPlayer);
+	picker_array.append(Tiles.NoStone);
+	picker_array.append(Tiles.NoWonder);
 	
 	for i in range(picker_array.size()):
 		var x = i % 21;
@@ -478,6 +488,20 @@ func tooltip_for_tile(tile: int) -> String:
 			text = "Depth Door: Solid unless current Depth is greater than or equal to the displayed number (or vice versa, if it's given a negative Door Depth)."
 		Tiles.SpliceFlower:
 			text = "Splice Flower: When the Player steps here: Erase history (stopping re-simulation if it was in progress). This is the new turn 0. Delete this."
+		Tiles.NoPlayer:
+			text = "No Player: Solid to Players."
+		Tiles.NoStone:
+			text = "No Stone: Solid to Stone Blocks."
+		Tiles.NoWonder:
+			text = "No Wonder: Solid to Wonder Blocks."
+		Tiles.CrateGoal:
+			text = "Block Goal: Prevents winning unless a Block is on top."
+		Tiles.Spikes:
+			text = "Spikes: Breaks the Player on contact."
+		Tiles.OrangeSpikes:
+			text = "Orange Spikes: Breaks the Player on contact and resimulates history. (This usually causes an infinite loop.)"
+		Tiles.WhiteBlock:
+			text = "White Block: Has the Wonder Block reset immunity but doesn't resimulate history when it moves."
 	return text;
 	
 func picker_tooltip() -> void:
