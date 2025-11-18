@@ -1,7 +1,7 @@
 extends Label
 class_name FloatingText
 
-var timer = 0;
+var timer : float = -1.0;
 var reversed = false;
 
 func _process(delta: float) -> void:

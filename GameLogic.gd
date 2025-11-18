@@ -1624,6 +1624,8 @@ func try_enter(actor: Actor, dir: Vector2, chrono: int, can_push: bool, hypothet
 			# Strength Rule
 			if !strength_check(actor.strength + strength_modifier, actor_there.heaviness):
 				pushers_list.pop_back();
+				if (!is_resimulating and actor_there.actorname == Actor.Name.DepthDoor):
+					floating_text("Opens at Depth " + str(actor_there.door_depth) + "+.");
 				return Success.No;
 		var result = Success.Yes;
 
