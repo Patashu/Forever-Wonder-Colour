@@ -22,8 +22,7 @@ text = "Rules Overview
 * (Note that unsuccessful moves are not a part of history, and thus won't be replayed, but a previously successful move may fail or do something different.)
 * A Wonder Block changing position while already re-simulating history will truncate history at that move and start a deeper re-simulation (Depth 2, 3 and so on).
 * Depth Doors close when the current Depth reaches their displayed number. (Negative numbers: -1 opens when the current Depth reaches 1+, and so on.)
-* Stepping on a Splice Flower consumes it and set the current state as 'Turn 0', erasing prior history.
-* Custom Puzzles may have non-vanilla elements. Refer to the Level Editor (or experiment) to learn what they do."
+* Stepping on a Splice Flower consumes it and set the current state as 'Turn 0', erasing prior history."
 align = 1
 autowrap = true
 
