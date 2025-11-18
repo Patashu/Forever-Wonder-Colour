@@ -120,6 +120,16 @@ _global_script_classes=[ {
 "path": "res://LevelScene.gd"
 }, {
 "base": "Node2D",
+"class": "Lore2",
+"language": "GDScript",
+"path": "res://Lore2.gd"
+}, {
+"base": "Node2D",
+"class": "Lore3",
+"language": "GDScript",
+"path": "res://Lore3.gd"
+}, {
+"base": "Node2D",
 "class": "Menu",
 "language": "GDScript",
 "path": "res://Menu.gd"
@@ -207,6 +217,8 @@ _global_script_class_icons={
 "LevelInfo": "",
 "LevelInfoEdit": "",
 "LevelScene": "",
+"Lore2": "",
+"Lore3": "",
 "Menu": "",
 "NowPlaying": "",
 "OneTimeSprite": "",

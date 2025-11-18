@@ -165,6 +165,9 @@ var is_resimulating : bool = false;
 var resimulation_turn : int = 0;
 var total_iterations : int = 0;
 var door_depths : String = "";
+# lore!
+var lore2_shown : bool = false;
+var lore3_shown : bool = false;
 # additional information about what happened during a move
 var TEMP_wonderchanged : bool = false;
 var TEMP_didpush : bool = false;
@@ -1378,6 +1381,10 @@ is_move: bool = false, can_push: bool = true) -> int:
 			add_to_animation_server(actor, [Anim.spliceflower]);
 			TEMP_steppedonspliceflower = true;
 			tutorial_complete = true;
+			if (!lore2_shown and !doing_replay):
+				lore2_shown = true;
+				var a = preload("res://Lore2.tscn").instance();
+				add_to_ui_stack(a);
 	return result;
 
 func move_actor_to(actor: Actor, pos: Vector2, chrono: int, hypothetical: bool,
@@ -1756,6 +1763,10 @@ func check_won(chrono: int) -> void:
 	
 	if (!locked and on_goal):
 		won = true;
+		if (!lore3_shown and !doing_replay):
+			lore3_shown = true;
+			var a = preload("res://Lore3.tscn").instance();
+			add_to_ui_stack(a);
 		if (won and test_mode):
 			var level_info = terrainmap.get_node_or_null("LevelInfo");
 			if (level_info != null):
@@ -1826,7 +1837,8 @@ func adjust_winlabel_deferred() -> void:
 	
 func adjust_winlabel() -> void:
 	var winlabel_rect_size = winlabel.get_rect_size();
-	winlabel.set_rect_position(Vector2(pixel_width/2 - int(floor(winlabel_rect_size.x/2)), win_label_default_y));
+	var fudge = -10;
+	winlabel.set_rect_position(Vector2(pixel_width/2 - int(floor(winlabel_rect_size.x/2))+fudge, win_label_default_y));
 	var tries = 1;
 	var player_rect = player.get_rect();
 	var label_rect = Rect2(winlabel.get_rect_position(), winlabel_rect_size);
@@ -2606,6 +2618,10 @@ func handle_global_animation(animation: Array) -> void:
 	pass
 
 func update_animation_server(skip_globals: bool = false) -> void:
+	# don't interrupt lore
+	if (ui_stack.size() > 0 and (ui_stack[ui_stack.size() - 1].name == "Lore2" or ui_stack[ui_stack.size() - 1].name == "Lore3")):
+		return;
+	
 	# don't interrupt ongoing animations
 	for actor in actors:
 		if actor.animations.size() > 0:
@@ -2967,6 +2983,8 @@ func load_custom_level(custom: String) -> void:
 		return;
 	
 	tutorial_complete = true;
+	lore2_shown = true;
+	lore3_shown = true;
 	
 	is_custom = true;
 	in_insight_level = false;
