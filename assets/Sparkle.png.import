@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/sparkle.png-af136f5f90e6793ac717cc01398cdab8.stex"
+path="res://.import/Sparkle.png-cc20758069eb53ca21b96744d85c6565.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sparkle.png"
-dest_files=[ "res://.import/sparkle.png-af136f5f90e6793ac717cc01398cdab8.stex" ]
+source_file="res://assets/Sparkle.png"
+dest_files=[ "res://.import/Sparkle.png-cc20758069eb53ca21b96744d85c6565.stex" ]
 
 [params]
 

@@ -218,7 +218,7 @@ func _process(delta: float) -> void:
 				# spawn an ice puff
 				var sprite = Sprite.new();
 				sprite.set_script(preload("res://FadingSprite.gd"));
-				sprite.texture = preload("res://assets/sparkle.png");
+				sprite.texture = preload("res://assets/Sparkle.png");
 				sprite.fadeout_timer_max = 0.8;
 				sprite.velocity = (-moving*gamelogic.rng.randf_range(8, 16)).rotated(gamelogic.rng.randf_range(-0.5, 0.5));
 				sprite.position = position + Vector2(gamelogic.rng.randf_range(gamelogic.cell_size*1/4, gamelogic.cell_size*3/4), gamelogic.rng.randf_range(gamelogic.cell_size*1/4, gamelogic.cell_size*3/4));
