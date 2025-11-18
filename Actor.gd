@@ -8,7 +8,6 @@ var pos : Vector2 = Vector2.ZERO
 var home_pos : Vector2 = Vector2.ZERO;
 var home_broken: bool = false;
 var broken : bool = false
-var post_mortem : int = -1;
 var strength : int = 0
 var heaviness : int = 0
 var durability : int = 0
@@ -40,12 +39,6 @@ var movement_parity = false;
 # a part of, so other things that shared their tile can move with them
 var just_moved : bool = false;
 var fade_tween = null;
-
-enum PostMortems {
-	Fall,
-	Frag,
-	Collect
-}
 
 # faster than string comparisons
 enum Name {
@@ -299,105 +292,10 @@ func _process(delta: float) -> void:
 					is_done = true;
 				else:
 					is_done = false;
-			7: #melt'
+			7: #intro
 				is_done = true;
-			8: #unmelt
+			8: #outro
 				is_done = true;
-			9: #starget
-				is_done = true;
-			10: #starunget
-				is_done = true;
-			11: #sing
-				is_done = true;
-			12: #fall
-				is_done = true;
-			13: #intro
-				facing_dir = Vector2.RIGHT;
-				base_frame = 0;
-				animation_frame = 0;
-				self.texture = preload("res://assets/intro_spritesheet.png");
-				self.hframes = 17;
-				self.vframes = 1;
-				animation_timer_max = current_animation[1];
-				var old_animation_timer_tick = int(animation_timer*10);
-				animation_timer += delta;
-				var new_animation_timer_tick = int(animation_timer*10);
-				if (old_animation_timer_tick != new_animation_timer_tick):
-					var sprite = Sprite.new();
-					sprite.set_script(preload("res://FadingSprite.gd"));
-					sprite.texture = preload("res://assets/intro_particle.png")
-					sprite.hframes = 2;
-					sprite.vframes = 1;
-					sprite.frame = gamelogic.rng.randi_range(0, sprite.hframes - 1);
-					sprite.fadeout_timer_max = 0.8;
-					sprite.velocity = Vector2(0, -gamelogic.rng.randf_range(16, 32)).rotated(gamelogic.rng.randf_range(-0.5, 0.5));
-					sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
-					sprite.position += sprite.velocity*0.4;
-					sprite.position.x += gamelogic.rng.randf_range(-8, 8);
-					sprite.position.y += (1.0-(animation_timer/animation_timer_max))*gamelogic.cell_size*2;
-					sprite.centered = true;
-					sprite.sine_mult = 7.0;
-					sprite.sine_offset = 3.0;
-					sprite.sine_timer = gamelogic.rng.randf_range(0.0, 100.0);
-					gamelogic.overactorsparticles.add_child(sprite);
-				self.frame = clamp(floor((animation_timer/animation_timer_max)*hframes), 0, hframes - 1);
-				if animation_timer > animation_timer_max:
-					if (animation_timer_max >= 2.0):
-						gamelogic.undo_effect_color = gamelogic.meta_color;
-						gamelogic.afterimage(self);
-						for i in range(10):
-							var sprite = Sprite.new();
-							sprite.set_script(preload("res://FadingSprite.gd"));
-							sprite.texture = preload("res://assets/intro_particle.png")
-							sprite.hframes = 2;
-							sprite.vframes = 1;
-							sprite.frame = gamelogic.rng.randi_range(0, sprite.hframes - 1);
-							sprite.fadeout_timer_max = 1.6;
-							sprite.scale = Vector2(1.0, 1.0);
-							sprite.velocity = Vector2(gamelogic.rng.randf_range(16, 32), 0).rotated(gamelogic.rng.randf_range(0, PI*2));
-							sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2) + sprite.velocity*0.25;
-							sprite.centered = true;
-							gamelogic.overactorsparticles.add_child(sprite);
-					is_done = true;
-					update_graphics();
-				else:
-					is_done = false;
-			14: #outro
-				#same code as intro but with anim reversed
-				facing_dir = Vector2.RIGHT;
-				base_frame = 0;
-				animation_frame = 0;
-				self.texture = preload("res://assets/intro_spritesheet.png");
-				self.hframes = 17;
-				self.vframes = 1;
-				animation_timer_max = current_animation[1];
-				var old_animation_timer_tick = int(animation_timer*10);
-				animation_timer += delta;
-				var new_animation_timer_tick = int(animation_timer*10);
-				if (old_animation_timer_tick != new_animation_timer_tick):
-					var sprite = Sprite.new();
-					sprite.set_script(preload("res://FadingSprite.gd"));
-					sprite.texture = preload("res://assets/intro_particle.png")
-					sprite.hframes = 3;
-					sprite.vframes = 1;
-					sprite.frame = gamelogic.rng.randi_range(0, sprite.hframes - 1);
-					sprite.fadeout_timer_max = 0.8;
-					sprite.velocity = Vector2(0, -gamelogic.rng.randf_range(16, 32)).rotated(gamelogic.rng.randf_range(-0.5, 0.5));
-					sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
-					sprite.position += sprite.velocity*0.4;
-					sprite.position.x += gamelogic.rng.randf_range(-8, 8);
-					sprite.position.y += ((animation_timer/animation_timer_max))*gamelogic.cell_size*2;
-					sprite.centered = true;
-					sprite.sine_mult = 7.0;
-					sprite.sine_offset = 3.0;
-					sprite.sine_timer = gamelogic.rng.randf_range(0.0, 100.0);
-					gamelogic.overactorsparticles.add_child(sprite);
-				self.frame = clamp(floor((1.0-animation_timer/animation_timer_max)*hframes), 0, hframes - 1);
-				if animation_timer > animation_timer_max:
-					is_done = true;
-					texture = null;
-				else:
-					is_done = false;
 		if (is_done):
 			animations.pop_front();
 			animation_timer = 0;

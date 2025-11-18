@@ -91,14 +91,8 @@ enum Anim {
 	afterimage_at, #4
 	fade, #5
 	stall, #6
-	melt, #7
-	unmelt, #8
-	starget, #9
-	starunget, #10
-	sing, #11
-	fall, #12
-	intro, #13
-	outro, #14
+	intro, #7
+	outro, #8
 }
 
 enum Greenness {
@@ -159,7 +153,6 @@ var voidlike_puzzle : bool = false;
 var player : Actor = null
 var actors : Array = []
 var goals : Array = []
-#var hole_sprites : Dictionary = {}
 # only one undo buffer in this game :) hooray :)
 var meta_turn : int = 0;
 var meta_undo_buffer : Array = [];
@@ -372,11 +365,12 @@ func _ready() -> void:
 		self.get_parent().call_deferred("add_child", timetostart);
 
 func time_to_start() -> void:
-	play_sound("intro");
-	current_track = -1;
-	target_track = 0;
-	fadeout_timer = 0.0;
-	fadeout_timer_max = 6.8;
+	pass
+	#play_sound("intro");
+	#current_track = -1;
+	#target_track = 0;
+	#fadeout_timer = 0.0;
+	#fadeout_timer_max = 6.8;
 	intro_hop();
 
 var GuiHolder : CanvasLayer;
@@ -957,9 +951,6 @@ func ready_map() -> void:
 	for goal in goals:
 		goal.queue_free();
 	goals.clear();
-	#for hole_sprite in hole_sprites.values():
-	#	hole_sprite.queue_free();
-	#hole_sprites.clear();
 	for whatever in underterrainfolder.get_children():
 		whatever.queue_free();
 	for whatever in actorsfolder.get_children():
@@ -1019,18 +1010,19 @@ func ready_map() -> void:
 var first_intro = false;
 
 func intro_hop() -> void:
-	if (!ready_done):
-		player.texture = null;
-		return;
-	if (!first_intro):
-		first_intro = true;
-		player.texture = null;
-		add_to_animation_server(player, [Anim.stall, 0.7]);
-		add_to_animation_server(player, [Anim.intro, 2.8]);
-		add_to_animation_server(player, [Anim.sing]);
-		add_to_animation_server(player, [Anim.sing]);
-	else:
-		add_to_animation_server(player, [Anim.intro, 0.5]);
+	pass
+#	if (!ready_done):
+#		player.texture = null;
+#		return;
+#	if (!first_intro):
+#		first_intro = true;
+#		player.texture = null;
+#		add_to_animation_server(player, [Anim.stall, 0.7]);
+#		add_to_animation_server(player, [Anim.intro, 2.8]);
+#		add_to_animation_server(player, [Anim.sing]);
+#		add_to_animation_server(player, [Anim.sing]);
+#	else:
+#		add_to_animation_server(player, [Anim.intro, 0.5]);
 
 func show_button(button: Button) -> void:
 	if (!button.visible):
@@ -1250,26 +1242,12 @@ func prepare_audio() -> void:
 	# TODO: I could automate this if I can iterate the folder
 	# TODO: replace this with an enum and assert on startup like tiles
 	
-	#new SFX
-	sounds["crashland"] = preload("res://sfx/crashland.ogg");
-	sounds["goalclosing"] = preload("res://sfx/goalclosing.ogg");
-	sounds["goalopening"] = preload("res://sfx/goalopening.ogg");
-	sounds["melt"] = preload("res://sfx/melt.ogg");
-	sounds["outro"] = preload("res://sfx/outro.ogg");
-	sounds["plummet"] = preload("res://sfx/plummet.ogg");
-	sounds["slide"] = preload("res://sfx/slide.ogg");
-	sounds["starget"] = preload("res://sfx/starget.ogg");
-	sounds["unmelt"] = preload("res://sfx/unmelt.ogg");
-	sounds["unwin"] = preload("res://sfx/unwin.ogg");	
-	
 	#old SFX still in use (afaik
 	sounds["involuntarybumpother"] = preload("res://sfx/involuntarybumpother.ogg");
 	sounds["bump"] = preload("res://sfx/bump.ogg");
-	sounds["usegreenality"] = preload("res://sfx/usegreenality.ogg");
-	sounds["intro"] = preload("res://sfx/intro.ogg");
-	sounds["unpush"] = preload("res://sfx/unpush.ogg");
+	#sounds["intro"] = preload("res://sfx/intro.ogg");
+	#sounds["outro"] = preload("res://sfx/outro.ogg");
 	sounds["push"] = preload("res://sfx/push.ogg");
-	sounds["unfall"] = preload("res://sfx/unfall.ogg");
 	sounds["undostrong"] = preload("res://sfx/undostrong.ogg");
 	sounds["metaredo"] = preload("res://sfx/metaredo.ogg");
 	sounds["metarestart"] = preload("res://sfx/metarestart.ogg");
@@ -1279,9 +1257,9 @@ func prepare_audio() -> void:
 	sounds["voidundo"] = preload("res://sfx/voidundo.ogg");
 	sounds["switch"] = preload("res://sfx/switch.ogg");
 
-	music_tracks.append(preload("res://music/Mind Palace.ogg"));
-	music_info.append("Patashu - Mind Palace");
-	music_db.append(0.0);
+	#music_tracks.append(preload("res://music/Mind Palace.ogg"));
+	#music_info.append("Patashu - Mind Palace");
+	#music_db.append(0.0);
 	
 	for i in range (8):
 		var speaker = AudioStreamPlayer.new();
@@ -1422,7 +1400,8 @@ is_move: bool = false, can_push: bool = true) -> int:
 
 		#do sound effects for special moves and their undoes
 		if (was_push and is_retro):
-			add_to_animation_server(actor, [Anim.sfx, "unpush"]);
+			pass
+			#add_to_animation_server(actor, [Anim.sfx, "unpush"]);
 		if (was_push and !is_retro):
 			add_to_animation_server(actor, [Anim.sfx, "push"]);
 			# dirty hack - we would really rather have some way to send this information to their Anim.move event
@@ -1673,15 +1652,6 @@ func end_lose() -> void:
 		won_fade_started = false;
 		player.modulate.a = 1;
 
-#func add_hole_sprite(actor: ActorBase, layer: int) -> void:
-#	var sprite = Sprite.new();
-#	hole_sprites[actor.pos] = sprite;
-#	sprite.position = actor.pos*cell_size + Vector2(cell_size/2, cell_size/2);
-#	sprite.texture = preload("res://assets/pit_filling.png");
-#	sprite.hframes = 5;
-#	sprite.vframes = 3;
-#	add_actor_or_goal_at_appropriate_layer_at_back(sprite, layer);
-
 func set_actor_var(actor: ActorBase, prop: String, value, chrono: int,
 is_retro: bool = false, _retro_old_value = null) -> void:
 	var old_value = actor.get(prop);
@@ -1691,29 +1661,8 @@ is_retro: bool = false, _retro_old_value = null) -> void:
 		return
 	actor.set(prop, value);
 	
-	if (prop == "broken"):
-		if actor.post_mortem == Actor.PostMortems.Collect:
-			if (value == true):
-				for goal in goals:
-					add_to_animation_server(goal, [Anim.starget]);
-				add_to_animation_server(actor, [Anim.starget]);
-				add_to_animation_server(player, [Anim.stall, 0.8*Engine.time_scale]);
-				add_to_animation_server(player, [Anim.sing]);
-			else:
-				for goal in goals:
-					add_to_animation_server(goal, [Anim.starunget]);
-				add_to_animation_server(actor, [Anim.starunget]);
-				add_to_animation_server(player, [Anim.sing]);
-		elif actor.post_mortem == Actor.PostMortems.Fall:
-			if (value == true):
-				add_to_animation_server(actor, [Anim.fall]);
-			else:
-				add_to_animation_server(actor, [Anim.sfx, "unfall"]);
-		elif actor.post_mortem == Actor.PostMortems.Frag:
-			if (value == true):
-				add_to_animation_server(actor, [Anim.melt]);
-			else:
-				add_to_animation_server(actor, [Anim.unmelt]);
+	#if (prop == "broken"):
+	#	pass
 	
 	add_undo_event([Undo.set_actor_var, actor, prop, old_value, value], chrono_for_maybe_green_actor(actor, chrono));
 	
@@ -1778,10 +1727,6 @@ func finish_animations(chrono: int) -> void:
 		actor.update_graphics();
 	animation_server.clear();
 	animation_substep = 0;
-	
-	#for hole_sprite in hole_sprites.values():
-	#	hole_sprite.queue_free();
-	#hole_sprites.clear();
 
 func adjust_meta_turn(amount: int, chrono: int) -> void:
 	meta_turn += amount;
@@ -1816,7 +1761,7 @@ func check_won(chrono: int) -> void:
 					custom_string = custom_string.replace(annotated_authors_replay, level_info.level_replay);
 				floating_text("Test successful, recorded replay!");
 		if (won == true and !doing_replay):
-			play_won("outro");
+			#play_won("outro");
 			var levels_save_data = save_file["levels"];
 			if (!levels_save_data.has(level_name)):
 				levels_save_data[level_name] = {};
@@ -2353,27 +2298,6 @@ var char_to_dir : Dictionary = { "w": Vector2.UP, "a": Vector2.LEFT, "s": Vector
 func time_passes(chrono: int) -> void:
 	animation_substep(chrono);
 	
-	# Fall into holes and bottomless pits. (Having this happen before star collect is INTERESTING...)
-#	if (chrono < Chrono.META_UNDO):
-#		for actor in actors:
-#			if actor.broken:
-#				continue
-#			var terrain = terrain_in_tile(actor.pos, actor, chrono);
-#			for i in range(terrain.size()):
-#				var tile = terrain[i];
-#				if tile == Tiles.Hole:
-#					actor.post_mortem = Actor.PostMortems.Fall;
-#					#add_hole_sprite(actor, i);
-#					set_actor_var(actor, "broken", true, chrono);
-#					maybe_change_terrain(actor, actor.pos, i, false, Greenness.Mundane, chrono, -1);
-#					break;
-#				elif tile == Tiles.BottomlessPit:
-#					actor.post_mortem = Actor.PostMortems.Fall;
-#					set_actor_var(actor, "broken", true, chrono);
-#					break;
-	
-#	animation_substep(chrono);
-	
 func currently_fast_replay() -> bool:
 	if (!doing_replay):
 		return false;
@@ -2409,6 +2333,8 @@ func authors_replay() -> void:
 	level_replay = authors_replay;
 	if (level_replay.find("c") >= 0):
 		voidlike_puzzle = true;
+		
+	update_info_labels();
 	
 func toggle_replay() -> void:
 	tutorial_complete = true;
