@@ -1271,7 +1271,7 @@ func prepare_audio() -> void:
 	#sounds["intro"] = preload("res://sfx/intro.ogg");
 	#sounds["outro"] = preload("res://sfx/outro.ogg");
 	
-	#depth doora
+	#depth doors? might end up unused.
 	sounds["dig"] = preload("res://sfx/dig.ogg");
 	sounds["unlock"] = preload("res://sfx/unlock.ogg");
 	
