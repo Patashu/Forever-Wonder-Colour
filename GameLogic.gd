@@ -1258,11 +1258,14 @@ func prepare_audio() -> void:
 	#sounds["intro"] = preload("res://sfx/intro.ogg");
 	#sounds["outro"] = preload("res://sfx/outro.ogg");
 	
-	#old SFX still in use (afaik
+	#depth doora
+	sounds["dig"] = preload("res://sfx/dig.ogg");
+	sounds["unlock"] = preload("res://sfx/unlock.ogg");
+	
+	#old SFX still in use (afaik)
 	sounds["involuntarybumpother"] = preload("res://sfx/involuntarybumpother.ogg");
 	sounds["bump"] = preload("res://sfx/bump.ogg");
 	sounds["push"] = preload("res://sfx/push.ogg");
-	sounds["undostrong"] = preload("res://sfx/undostrong.ogg");
 	sounds["metaredo"] = preload("res://sfx/metaredo.ogg");
 	sounds["metarestart"] = preload("res://sfx/metarestart.ogg");
 	sounds["metaundo"] = preload("res://sfx/metaundo.ogg");
