@@ -2261,6 +2261,9 @@ func increment_iteration() -> void:
 	#iterations, depth, undo event
 	total_iterations += 1;
 	adjust_depth(1);
+	# hack for the first depth entered?
+	if (current_depth == 1):
+		update_resiminfolabel(current_depth, 0, history_moves.length())
 	add_undo_event([Undo.iteration], Chrono.MOVE);
 	#TODO: depth doors
 	if (is_resimulating):
@@ -2282,6 +2285,7 @@ func increment_iteration() -> void:
 					set_actor_var(actor, "broken", true, Chrono.MOVE);
 					break;
 	#loop through history
+	add_to_animation_server(null, [Anim.resim_values, current_depth, 0, history_moves.length()], true);
 	for h_i in range(history_moves.length()):
 		resimulation_turn = h_i;
 		# TODO: first 1mil turns
@@ -2667,12 +2671,15 @@ func copy_one_from_animation_server(actor: ActorBase, event: int, second_actor: 
 
 func handle_global_animation(animation: Array) -> void:
 	if animation[0] == Anim.resim_values:
-		ANIM_depth = animation[1];
-		ANIM_turn = animation[2];
-		ANIM_turnmax = animation[3];
-		if (!tutorial_complete):
-			ANIM_turn += 1000000;
-			ANIM_turnmax += 1000000;
+		update_resiminfolabel(animation[1], animation[2], animation[3]);
+
+func update_resiminfolabel(depth: int, turn: int, turnmax: int) -> void:
+	ANIM_depth = depth;
+	ANIM_turn = turn;
+	ANIM_turnmax = turnmax;
+	if (!tutorial_complete):
+		ANIM_turn += 1000000;
+		ANIM_turnmax += 1000000;
 		if (ANIM_depth > 0):
 			resiminfolabel.visible = true;
 			resiminfolabel.text = "Resimulating: " + str(ANIM_turn) + "/" + str(ANIM_turnmax) + "\nCurrent Depth: " + str(ANIM_depth); 
