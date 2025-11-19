@@ -391,7 +391,7 @@ func setup_gui_holder() -> void:
 	GuiHolder = CanvasLayer.new();
 	GuiHolder.name = "GuiHolder";
 	get_parent().get_parent().add_child(GuiHolder);
-	var ui_elements = [levelstar, levellabel, replaybuttons, virtualbuttons, winlabel, metainfolabel, menubutton];
+	var ui_elements = [levelstar, levellabel, replaybuttons, virtualbuttons, winlabel, metainfolabel, resiminfolabel, menubutton];
 	for ui_element in ui_elements:
 		ui_element.get_parent().remove_child(ui_element);
 		GuiHolder.add_child(ui_element);
@@ -850,6 +850,8 @@ func setup_animation_speed() -> void:
 	if (save_file.has("animation_speed")):
 		var value = save_file["animation_speed"];
 		Engine.time_scale = value;
+	else:
+		save_file["animation_speed"] = 1.0;
 
 func initialize_shaders() -> void:
 	#each thing that uses a shader has to compile the first time it's used, so... use it now!
@@ -1995,7 +1997,7 @@ func just_did_meta() -> void:
 	finish_animations(Chrono.META_UNDO);
 	undo_effect_color = meta_color;
 	# void things experience time when you undo
-	time_passes(Chrono.META_UNDO);
+	#time_passes(Chrono.META_UNDO);
 
 func meta_redo() -> bool:
 	if (won or lost):
@@ -2010,7 +2012,7 @@ func meta_redo() -> bool:
 	do_one_letter(letter);
 	#cut_sound();
 	play_sound("metaredo");
-	#just_did_meta();
+	just_did_meta();
 	preserving_meta_redo_inputs = false;
 	metaredobuttonlabel.visible = false;
 	return true;
@@ -2680,12 +2682,17 @@ func update_resiminfolabel(depth: int, turn: int, turnmax: int) -> void:
 	if (!tutorial_complete):
 		ANIM_turn += 1000000;
 		ANIM_turnmax += 1000000;
-		if (ANIM_depth > 0):
-			resiminfolabel.visible = true;
-			resiminfolabel.text = "Resimulating: " + str(ANIM_turn) + "/" + str(ANIM_turnmax) + "\nCurrent Depth: " + str(ANIM_depth); 
-		else:
-			resiminfolabel.visible = false;
-			play_sound("wonderend");
+	if (ANIM_depth > 0):
+		resiminfolabel.visible = true;
+		resiminfolabel.text = "Resimulating: " + str(ANIM_turn) + "/" + str(ANIM_turnmax) + "\nCurrent Depth: " + str(ANIM_depth);
+		if (tutorial_complete and !is_custom and !in_insight_level):
+			if (Input.is_action_pressed("ui_accept")):
+				resiminfolabel.text += "\n\n(Skip by pressing any direction)";
+			else:
+				resiminfolabel.text += "\n\n(Speed up with " + human_readable_input("ui_accept") + ")";
+	else:
+		resiminfolabel.visible = false;
+		play_sound("wonderend");
 
 func update_animation_server(skip_globals: bool = false) -> void:
 	# don't interrupt lore
@@ -3246,6 +3253,16 @@ func _process(delta: float) -> void:
 			
 	sounds_played_this_frame.clear();
 	
+	#time scale during resim
+	if (resiminfolabel.visible and Input.is_action_pressed("ui_accept")):
+		Engine.time_scale = save_file["animation_speed"]*3.0;
+		# insta-skip if we're holding a direction (but it's not a 'real' press)
+		if Input.is_action_pressed("ui_up") or Input.is_action_pressed("ui_down") or Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right"):
+			finish_animations(Chrono.MOVE);
+			get_debounced = true;
+	else:
+		Engine.time_scale = save_file["animation_speed"];
+	
 	if (won):
 		won_cooldown += delta;
 	
@@ -3314,7 +3331,7 @@ func _process(delta: float) -> void:
 	if ui_stack.size() == 0 and covered_cooldown_timer <= 0.0:
 		var dir = Vector2.ZERO;
 		
-		if (doing_replay and replay_timer > next_replay and !replay_paused):
+		if (doing_replay and replay_timer > next_replay and !replay_paused and !resiminfolabel.visible):
 			do_one_replay_turn();
 			update_info_labels();
 		
@@ -3413,7 +3430,9 @@ func _process(delta: float) -> void:
 			update_info_labels();
 		elif (Input.is_action_just_pressed("ui_accept")): #so enter can open the menu but only if it's closed
 			#end_replay(); #done in escape();
-			escape();
+			# prevent spurious menu openings
+			if !resiminfolabel.visible and !get_debounced:
+				escape();
 		elif (!get_debounced and just_key_repeated_a_dir_cooldown_timer <= 0.0):
 			# and !replayspeedslider.has_focus() and !replayturnslider.has_focus()
 			# (not necessary right now as they auto-unfocus in _input)
@@ -3426,7 +3445,7 @@ func _process(delta: float) -> void:
 			if (pressed_or_key_repeated("ui_down") or pressed_or_key_repeated("nonaxis_down")):
 				dir = Vector2.DOWN;
 				
-			if dir != Vector2.ZERO:
+			if dir != Vector2.ZERO and !resiminfolabel.visible:
 				end_replay();
 				character_move(dir);
 				update_info_labels();
