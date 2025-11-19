@@ -1107,9 +1107,6 @@ func any_layer_has_this_tile(id: int) -> bool:
 func make_actors() -> void:
 	voidlike_puzzle = false;
 	
-	# find goals and goal-ify them
-	find_goals();
-	
 	var where_are_actors = {};
 
 	# find the player
@@ -1134,6 +1131,10 @@ func make_actors() -> void:
 			player.strength = Strength.LIGHT;
 			player.update_graphics();
 			count += 1;
+	
+	# find goals and goal-ify them
+	# (Forever Wonder Colour: do this after so it layers under player)
+	find_goals();
 	
 	# HACK: move actors to where they are, so now that is_main_character and so on is determined,
 	# they correctly ding/don't ding different kinds of goals
