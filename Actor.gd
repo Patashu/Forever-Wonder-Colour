@@ -354,8 +354,8 @@ func _process(delta: float) -> void:
 					ripple.rect_position += Vector2(12, 12);
 					self.add_child(ripple);
 			10: #wonderchange
-				gamelogic.play_sound("wonderchange");
 				if (animation_timer < 99): #my eyes
+					gamelogic.play_sound("wonderchange");
 					gamelogic.undo_effect_strength = 0.4;
 					gamelogic.undo_effect_per_second = gamelogic.undo_effect_strength*(1);
 					gamelogic.undo_effect_color = gamelogic.red_color;

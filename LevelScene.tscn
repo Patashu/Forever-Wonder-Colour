@@ -321,6 +321,16 @@ Iteration
 Inputs"
 align = 2
 
+[node name="ResimInfoLabel" type="Label" parent="."]
+visible = false
+margin_top = 1.0
+margin_right = 511.0
+margin_bottom = 35.0
+theme = ExtResource( 2 )
+text = "Resimulating: 1000000/1000000
+Current Depth: 1"
+align = 1
+
 [node name="FadeIn" type="ColorRect" parent="."]
 visible = false
 margin_right = 512.0

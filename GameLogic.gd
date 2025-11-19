@@ -13,6 +13,7 @@ onready var levellabel : Label = levelscene.get_node("LevelLabel");
 onready var levelstar : Sprite = levelscene.get_node("LevelStar");
 onready var winlabel : Node2D = levelscene.get_node("WinLabel");
 onready var metainfolabel : Label = levelscene.get_node("MetaInfoLabel");
+onready var resiminfolabel : Label = levelscene.get_node("ResimInfoLabel");
 onready var downarrow : Sprite = levelscene.get_node("DownArrow");
 onready var leftarrow : Sprite = levelscene.get_node("LeftArrow");
 onready var rightarrow : Sprite = levelscene.get_node("RightArrow");
@@ -96,6 +97,7 @@ enum Anim {
 	spliceflower, #9
 	wonderchange, #10
 	emoticon, #11
+	resim_values, #12
 }
 
 enum Greenness {
@@ -167,6 +169,10 @@ var is_resimulating : bool = false;
 var resimulation_turn : int = 0;
 var total_iterations : int = 0;
 var door_depths : String = "";
+# anim resim
+var ANIM_turn : int = 0;
+var ANIM_turnmax : int = 0;
+var ANIM_depth : int = 0;
 # lore!
 var lore2_shown : bool = false;
 var lore3_shown : bool = false;
@@ -361,7 +367,7 @@ func _ready() -> void:
 	if (level_save_data.has("won") and level_save_data["won"]):
 		already_won = true;
 	
-	if (is_web or !already_won):
+	if true:
 		var a = preload("res://WebStartup.tscn").instance();
 		call_deferred("add_to_ui_stack", a)
 	else:
@@ -974,6 +980,10 @@ func ready_map() -> void:
 	is_resimulating = false;
 	resimulation_turn = 0;
 	
+	ANIM_depth = 0;
+	ANIM_turn = 0;
+	ANIM_turnmax = 0;
+	resiminfolabel.visible = false;
 	TEMP_didpush = false;
 	TEMP_stumbled = false;
 	TEMP_wonderchanged = false;
@@ -1252,6 +1262,7 @@ func prepare_audio() -> void:
 	#new SFX
 	sounds["spliceflower"] = preload("res://sfx/spliceflower.ogg");
 	sounds["wonderchange"] = preload("res://sfx/wonderchange.ogg");
+	sounds["wonderend"] = preload("res://sfx/wonderend.ogg");
 	sounds["whereblock"] = preload("res://sfx/whereblock.ogg");
 	sounds["surpriseblock"] = preload("res://sfx/surpriseblock.ogg");
 	sounds["ouch"] = preload("res://sfx/ouch.ogg");
@@ -1752,6 +1763,11 @@ func finish_animations(chrono: int) -> void:
 		actor.update_graphics();
 	animation_server.clear();
 	animation_substep = 0;
+	
+	ANIM_depth = 0;
+	ANIM_turn = 0;
+	ANIM_turnmax = 0;
+	resiminfolabel.visible = false;
 
 func adjust_meta_turn(amount: int, chrono: int) -> void:
 	meta_turn += amount;
@@ -2267,8 +2283,9 @@ func increment_iteration() -> void:
 					break;
 	#loop through history
 	for h_i in range(history_moves.length()):
-		# TODO: on-screen label with simulation turn and depth
 		resimulation_turn = h_i;
+		# TODO: first 1mil turns
+		add_to_animation_server(null, [Anim.resim_values, current_depth, resimulation_turn, history_moves.length()]);
 		var h = history_moves[h_i];
 		var h_lower = h.to_lower();
 		var was_push = h_lower != h;
@@ -2302,6 +2319,7 @@ func increment_iteration() -> void:
 	adjust_depth(-1);
 	resimulation_turn = 0;
 	is_resimulating = false;
+	add_to_animation_server(null, [Anim.resim_values, current_depth, history_moves.length(), history_moves.length()]);
 	#TODO: depth doors
 
 func splice_flower() -> void:
@@ -2648,11 +2666,23 @@ func copy_one_from_animation_server(actor: ActorBase, event: int, second_actor: 
 			return;
 
 func handle_global_animation(animation: Array) -> void:
-	pass
+	if animation[0] == Anim.resim_values:
+		ANIM_depth = animation[1];
+		ANIM_turn = animation[2];
+		ANIM_turnmax = animation[3];
+		if (!tutorial_complete):
+			ANIM_turn += 1000000;
+			ANIM_turnmax += 1000000;
+		if (ANIM_depth > 0):
+			resiminfolabel.visible = true;
+			resiminfolabel.text = "Resimulating: " + str(ANIM_turn) + "/" + str(ANIM_turnmax) + "\nCurrent Depth: " + str(ANIM_depth); 
+		else:
+			resiminfolabel.visible = false;
+			play_sound("wonderend");
 
 func update_animation_server(skip_globals: bool = false) -> void:
 	# don't interrupt lore
-	if (ui_stack.size() > 0 and (ui_stack[ui_stack.size() - 1].name == "Lore2" or ui_stack[ui_stack.size() - 1].name == "Lore3")):
+	if (ui_stack.size() > 0 and (ui_stack[ui_stack.size() - 1].name == "Lore2" or ui_stack[ui_stack.size() - 1].name == "Lore3" or ui_stack[ui_stack.size() - 1].name == "WebStartup")):
 		return;
 	
 	# don't interrupt ongoing animations
