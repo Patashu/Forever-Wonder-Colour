@@ -473,9 +473,9 @@ func tooltip_for_tile(tile: int) -> String:
 		Tiles.Wall:
 			text = "Wall: Solid."
 		Tiles.Player:
-			text = "Player"
+			text = "Player: In the other Earth beyond the veil, where celestial Dolphins practice magic and serpents see beyond time, Voyel is looking for ways to enrich himself. After overhearing a tip about a mysterious place with unimaginable power, he trekked across the Earth to exploit it for himself. But sometimes you don't realize what you have until it's gone."
 		Tiles.Win:
-			text = "Goal"
+			text = "Goal: (NOTE: Currently can't be used during a re-simulation, might change this if someone asks)"
 		Tiles.StoneBlock:
 			text = "Stone Block: An ordinary Sokoban block."
 		Tiles.WonderBlock:
@@ -503,7 +503,7 @@ func tooltip_for_tile(tile: int) -> String:
 		Tiles.Spikes:
 			text = "Spikes: Breaks the Player on contact."
 		Tiles.OrangeSpikes:
-			text = "Orange Spikes: Breaks the Player on contact and resimulates history. (This usually causes an infinite loop.) (TODO: Implement ordinal numbered depth doors and smart infinite loop detection)"
+			text = "Orange Spikes: Breaks the Player on contact and resimulates history. (This usually causes an infinite loop.) (Future work: Implement ordinal numbered depth doors and smart infinite loop detection)"
 		Tiles.WhiteBlock:
 			text = "White Block: Has the Wonder Block reset immunity but doesn't resimulate history when it moves."
 	return text;
