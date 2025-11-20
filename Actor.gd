@@ -81,10 +81,9 @@ func get_next_texture() -> Texture:
 				return preload("res://assets/wonder_block.png");
 				
 		Name.DepthDoor:
-			if broken:
-				return null;
-			else:
-				return preload("res://assets/depth_door_1.png");
+			hframes = 14;
+			vframes = 1;
+			return preload("res://assets/depth_door_spritesheet.png");
 	
 	return null;
 
@@ -145,7 +144,7 @@ func set_door_depth(door_depth: int) -> void:
 	self.door_depth = door_depth;
 	if (self.door_depth < 0):
 		self.broken = true;
-		update_graphics();
+		self.frame = hframes - 1;
 	# TODO: thought bubble number
 #	thought_bubble = Sprite.new();
 #	thought_bubble.set_script(preload("res://ThoughtBubble.gd"));
@@ -438,6 +437,27 @@ func _process(delta: float) -> void:
 					#just a straight count of frames isn't random looking enough lol
 					gamelogic.update_resiminfolabel(1, int(1000000.0*((animation_timer+gamelogic.rng.randf_range(-0.005, 0.005))/animation_timer_max))-1000000, turn_max);
 					is_done = false;
+			15: #depth_door_slow
+				var was_broken = current_animation[1];
+				if ((was_broken and frame == hframes-1) or (!was_broken and frame == 0)):
+					is_done = true;
+				else:
+					is_done = false;
+					animation_timer_max = 1.0;
+					animation_timer += delta;
+					if (animation_timer >= animation_timer_max):
+						animation_timer = animation_timer_max;
+						is_done = true;
+					if (was_broken):
+						frame = (animation_timer/animation_timer_max)*hframes;
+					else:
+						frame = (1-(animation_timer/animation_timer_max))*hframes;
+			16: #depth_door_fast
+				var was_broken = current_animation[1];
+				if (was_broken):
+					frame = hframes-1;
+				else:
+					frame = 0;
 		if (is_done):
 			animations.pop_front();
 			animation_timer = 0;

@@ -100,6 +100,8 @@ enum Anim {
 	resim_values, #12
 	new_iteration, #13
 	outside_universe, #14
+	depth_door_slow, #15
+	depth_door_fast, #16
 }
 
 enum Greenness {
@@ -2364,6 +2366,10 @@ func adjust_depth(impulse: int) -> void:
 				set_actor_var(actor, "broken", current_depth >= actor.door_depth, Chrono.MOVE);
 			elif (actor.door_depth < 0):
 				set_actor_var(actor, "broken", current_depth < -actor.door_depth, Chrono.MOVE);
+			if (current_depth >= 1 and impulse > 0):
+				add_to_animation_server(actor, [Anim.depth_door_fast, actor.broken]);
+			elif (current_depth == 0):
+				add_to_animation_server(actor, [Anim.depth_door_slow, actor.broken]);
 
 func reset_to_home(actor: Actor) -> void:
 	set_actor_var(actor, "broken", actor.home_broken, Chrono.MOVE);
