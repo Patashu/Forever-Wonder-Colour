@@ -13,7 +13,6 @@ func _ready() -> void:
 func destroy() -> void:
 	self.queue_free();
 	gamelogic.ui_stack.erase(self);
-	gamelogic.time_to_start();
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:

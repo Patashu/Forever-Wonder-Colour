@@ -384,7 +384,7 @@ func _ready() -> void:
 
 func time_to_start() -> void:
 	pass
-	#play_sound("intro");
+	play_sound("introfwc");
 	#current_track = -1;
 	#target_track = 0;
 	#fadeout_timer = 0.0;
@@ -1282,7 +1282,7 @@ func prepare_audio() -> void:
 	sounds["surpriseblock"] = preload("res://sfx/surpriseblock.ogg");
 	sounds["ouch"] = preload("res://sfx/ouch.ogg");
 	sounds["theuniverse"] = preload("res://sfx/theuniverse.ogg");
-	#sounds["intro"] = preload("res://sfx/intro.ogg");
+	sounds["introfwc"] = preload("res://sfx/introfwc.ogg");
 	#sounds["outro"] = preload("res://sfx/outro.ogg");
 	
 	#old SFX still in use (afaik)

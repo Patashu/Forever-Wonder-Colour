@@ -359,7 +359,7 @@ func _process(delta: float) -> void:
 					hframes = 1;
 					vframes = 1;
 					region_enabled = true;
-					var xx = 1+int(animation_timer*10)%10;
+					var xx = 1+int(animation_timer*14)%10;
 					region_rect = Rect2(16*xx, 16*2, 16, 16*(animation_timer/animation_timer_max));
 					offset = Vector2(8, 8+8*(1-(animation_timer/animation_timer_max)))
 					is_done = false;
