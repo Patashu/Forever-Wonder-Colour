@@ -420,6 +420,19 @@ func _process(delta: float) -> void:
 					is_done = true;
 				else:
 					is_done = false;
+			14: #outside_universe
+				animation_timer += delta;
+				animation_timer_max = current_animation[1];
+				var turn_max = current_animation[2];
+				if (animation_timer > animation_timer_max):
+					gamelogic.update_resiminfolabel(1, 0, turn_max);
+					is_done = true;
+					var a = preload("res://WebStartup.tscn").instance();
+					gamelogic.add_to_ui_stack(a);
+				else:
+					#just a straight count of frames isn't random looking enough lol
+					gamelogic.update_resiminfolabel(1, int(1000000.0*((animation_timer+gamelogic.rng.randf_range(-0.005, 0.005))/animation_timer_max))-1000000, turn_max);
+					is_done = false;
 		if (is_done):
 			animations.pop_front();
 			animation_timer = 0;

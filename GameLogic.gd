@@ -99,6 +99,7 @@ enum Anim {
 	emoticon, #11
 	resim_values, #12
 	new_iteration, #13
+	outside_universe, #14
 }
 
 enum Greenness {
@@ -386,7 +387,8 @@ func time_to_start() -> void:
 	#target_track = 0;
 	#fadeout_timer = 0.0;
 	#fadeout_timer_max = 6.8;
-	intro_hop();
+	if (!first_intro):
+		intro_hop();
 
 var GuiHolder : CanvasLayer;
 
@@ -1767,6 +1769,8 @@ func finish_animations(chrono: int) -> void:
 	ANIM_turn = 0;
 	ANIM_turnmax = 0;
 	resiminfolabel.visible = false;
+	#hack for moving while universe is resimulating
+	player.visible = true;
 
 func adjust_meta_turn(amount: int, chrono: int) -> void:
 	meta_turn += amount;
@@ -1995,6 +1999,7 @@ func just_did_meta() -> void:
 	undo_effect_color = meta_color;
 	# void things experience time when you undo
 	#time_passes(Chrono.META_UNDO);
+	player.visible = true;
 
 func meta_redo() -> bool:
 	if (won or lost):
@@ -2265,7 +2270,7 @@ func increment_iteration() -> void:
 	total_iterations += 1;
 	adjust_depth(1);
 	# hack for the first depth entered?
-	if (current_depth == 1):
+	if (current_depth == 1 and tutorial_complete):
 		update_resiminfolabel(current_depth, 0, history_moves.length())
 	add_undo_event([Undo.iteration], Chrono.MOVE);
 	#TODO: depth doors
@@ -2288,8 +2293,14 @@ func increment_iteration() -> void:
 					set_actor_var(actor, "broken", true, Chrono.MOVE);
 					break;
 	#loop through history
-	add_to_animation_server(null, [Anim.resim_values, current_depth, 0, history_moves.length()], true);
-	add_to_animation_server(player, [Anim.new_iteration]);
+	if (tutorial_complete):
+		add_to_animation_server(null, [Anim.resim_values, current_depth, 0, history_moves.length()], true);
+		add_to_animation_server(player, [Anim.new_iteration]);
+	else:
+		add_to_animation_server(player, [Anim.outside_universe, 2.0, history_moves.length()]);
+		animation_substep(Chrono.MOVE);
+		#add_to_animation_server(player, [Anim.stall, 0.1]); # hack so webstartup has time to appear
+		add_to_animation_server(player, [Anim.intro, 2.8]);
 	for h_i in range(history_moves.length()):
 		resimulation_turn = h_i;
 		# TODO: first 1mil turns
