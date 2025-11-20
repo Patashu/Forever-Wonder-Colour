@@ -132,7 +132,8 @@ enum Tiles {
 	CrateGoal,
 	Spikes,
 	OrangeSpikes,
-	WhiteBlock
+	WhiteBlock,
+	NoWhite
 }
 
 # information about the level
@@ -1603,6 +1604,11 @@ func try_enter_terrain(actor: Actor, pos: Vector2, chrono: int) -> int:
 				if (result == Success.No):
 					flash_terrain = id;
 					flash_colour = meta_color;
+			Tiles.NoWhite:
+				result = no_if_true_yes_if_false(actor.actorname == Actor.Name.WhiteBlock);
+				if (result == Success.No):
+					flash_terrain = id;
+					flash_colour = black_color;
 		if result != Success.Yes:
 			return result;
 	return result;

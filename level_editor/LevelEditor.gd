@@ -21,7 +21,8 @@ enum Tiles {
 	CrateGoal,
 	Spikes,
 	OrangeSpikes,
-	WhiteBlock
+	WhiteBlock,
+	NoWhite,
 }
 
 onready var gamelogic = get_tree().get_root().find_node("LevelScene", true, false).gamelogic;
@@ -136,6 +137,7 @@ func initialize_picker_array() -> void:
 	picker_array.append(Tiles.NoPlayer);
 	picker_array.append(Tiles.NoStone);
 	picker_array.append(Tiles.NoWonder);
+	picker_array.append(Tiles.NoWhite);
 	picker_array.append(Tiles.CrateGoal);
 	picker_array.append(Tiles.Spikes);
 	picker_array.append(Tiles.OrangeSpikes);
@@ -498,6 +500,8 @@ func tooltip_for_tile(tile: int) -> String:
 			text = "No Stone: Solid to Stone Blocks."
 		Tiles.NoWonder:
 			text = "No Wonder: Solid to Wonder Blocks."
+		Tiles.NoWhite:
+			text = "No White: Solid to White Blocks."
 		Tiles.CrateGoal:
 			text = "Block Goal: Prevents winning unless a Block is on top."
 		Tiles.Spikes:
