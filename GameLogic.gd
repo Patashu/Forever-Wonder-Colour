@@ -98,6 +98,7 @@ enum Anim {
 	wonderchange, #10
 	emoticon, #11
 	resim_values, #12
+	new_iteration, #13
 }
 
 enum Greenness {
@@ -2291,6 +2292,7 @@ func increment_iteration() -> void:
 					break;
 	#loop through history
 	add_to_animation_server(null, [Anim.resim_values, current_depth, 0, history_moves.length()], true);
+	add_to_animation_server(player, [Anim.new_iteration]);
 	for h_i in range(history_moves.length()):
 		resimulation_turn = h_i;
 		# TODO: first 1mil turns

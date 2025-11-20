@@ -352,6 +352,7 @@ func _process(delta: float) -> void:
 					self.add_child(ripple);
 			10: #wonderchange
 				if (animation_timer < 99): #my eyes
+					gamelogic.player.visible = false;
 					gamelogic.play_sound("wonderchange");
 					gamelogic.undo_effect_strength = 0.4;
 					gamelogic.undo_effect_per_second = gamelogic.undo_effect_strength*(1);
@@ -360,7 +361,7 @@ func _process(delta: float) -> void:
 					node2d.set_script(preload("res://CoolCircle.gd"));
 					node2d.position = self.position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
 					gamelogic.overactorsparticles.add_child(node2d);
-			11:
+			11: #emoticon
 				var text = current_animation[1];
 				gamelogic.floating_text(text,
 				self.global_position + Vector2(gamelogic.cell_size/2, -gamelogic.cell_size/2))
@@ -368,6 +369,22 @@ func _process(delta: float) -> void:
 					gamelogic.play_sound("surpriseblock");
 				elif (text == "?"):
 					gamelogic.play_sound("whereblock");
+			13: #new_iteration
+				visible = true;
+				if (animation_timer == 0):
+					gamelogic.afterimage(self);
+					if (fade_tween != null):
+						fade_tween.queue_free();
+					fade_tween = Tween.new();
+					self.add_child(fade_tween);
+					fade_tween.interpolate_property(self, "modulate:a", 0.0, 1.0, 0.1);
+					fade_tween.start();
+				animation_timer_max = 0.1;
+				animation_timer += delta;
+				if (animation_timer > animation_timer_max):
+					is_done = true;
+				else:
+					is_done = false;
 		if (is_done):
 			animations.pop_front();
 			animation_timer = 0;
