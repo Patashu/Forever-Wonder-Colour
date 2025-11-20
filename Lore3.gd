@@ -13,6 +13,7 @@ func _ready() -> void:
 func destroy() -> void:
 	self.queue_free();
 	gamelogic.ui_stack.erase(self);
+	gamelogic.play_won("outrofwc");
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:

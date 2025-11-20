@@ -1283,7 +1283,7 @@ func prepare_audio() -> void:
 	sounds["ouch"] = preload("res://sfx/ouch.ogg");
 	sounds["theuniverse"] = preload("res://sfx/theuniverse.ogg");
 	sounds["introfwc"] = preload("res://sfx/introfwc.ogg");
-	#sounds["outro"] = preload("res://sfx/outro.ogg");
+	sounds["outrofwc"] = preload("res://sfx/outrofwc.ogg");
 	
 	#old SFX still in use (afaik)
 	sounds["involuntarybumpother"] = preload("res://sfx/involuntarybumpother.ogg");
@@ -1824,8 +1824,10 @@ func check_won(chrono: int) -> void:
 	
 	if (!locked and on_goal):
 		won = true;
+		var just_showed_lore3 = false;
 		if (!lore3_shown and !doing_replay and !in_insight_level):
 			lore3_shown = true;
+			just_showed_lore3 = true;
 			var a = preload("res://Lore3.tscn").instance();
 			add_to_ui_stack(a);
 		if (won and test_mode):
@@ -1838,7 +1840,8 @@ func check_won(chrono: int) -> void:
 					custom_string = custom_string.replace(annotated_authors_replay, level_info.level_replay);
 				floating_text("Test successful, recorded replay!");
 		if (won == true and !doing_replay):
-			#play_won("outro");
+			if (!just_showed_lore3):
+				play_won("outrofwc");
 			var levels_save_data = save_file["levels"];
 			if (!levels_save_data.has(level_name)):
 				levels_save_data[level_name] = {};
