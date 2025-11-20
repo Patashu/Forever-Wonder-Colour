@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/theuniverse.ogg-c180731a56d65418772aabe0e550557b.oggstr"
+
+[deps]
+
+source_file="res://sfx/theuniverse.ogg"
+dest_files=[ "res://.import/theuniverse.ogg-c180731a56d65418772aabe0e550557b.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

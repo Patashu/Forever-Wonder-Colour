@@ -437,6 +437,8 @@ func _process(delta: float) -> void:
 				else:
 					is_done = false;
 			14: #outside_universe
+				if (animation_timer == 0):
+					gamelogic.play_sound("theuniverse");
 				animation_timer += delta;
 				animation_timer_max = current_animation[1];
 				var turn_max = current_animation[2];

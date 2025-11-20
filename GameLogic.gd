@@ -1281,6 +1281,7 @@ func prepare_audio() -> void:
 	sounds["whereblock"] = preload("res://sfx/whereblock.ogg");
 	sounds["surpriseblock"] = preload("res://sfx/surpriseblock.ogg");
 	sounds["ouch"] = preload("res://sfx/ouch.ogg");
+	sounds["theuniverse"] = preload("res://sfx/theuniverse.ogg");
 	#sounds["intro"] = preload("res://sfx/intro.ogg");
 	#sounds["outro"] = preload("res://sfx/outro.ogg");
 	
@@ -2328,10 +2329,11 @@ func increment_iteration() -> void:
 		add_to_animation_server(null, [Anim.resim_values, current_depth, 0, history_moves.length()], true);
 		add_to_animation_server(player, [Anim.new_iteration]);
 	else:
+		add_to_animation_server(player, [Anim.stall, 0.4]);
 		add_to_animation_server(player, [Anim.outside_universe, 2.0, history_moves.length()]);
 		animation_substep(Chrono.MOVE);
 		#add_to_animation_server(player, [Anim.stall, 0.1]); # hack so webstartup has time to appear
-		add_to_animation_server(player, [Anim.intro, 2.8]);
+		add_to_animation_server(player, [Anim.intro, 2.0]);
 	animation_substep(Chrono.MOVE);
 	for h_i in range(history_moves.length()):
 		resimulation_turn = h_i;
