@@ -138,6 +138,7 @@ func initialize_picker_array() -> void:
 	picker_array.append(Tiles.NoWonder);
 	picker_array.append(Tiles.CrateGoal);
 	picker_array.append(Tiles.Spikes);
+	picker_array.append(Tiles.OrangeSpikes);
 	
 	for i in range(picker_array.size()):
 		var x = i % 21;
@@ -501,7 +502,7 @@ func tooltip_for_tile(tile: int) -> String:
 		Tiles.Spikes:
 			text = "Spikes: Breaks the Player on contact."
 		Tiles.OrangeSpikes:
-			text = "Orange Spikes: Breaks the Player on contact and resimulates history. (This usually causes an infinite loop.)"
+			text = "Orange Spikes: Breaks the Player on contact and resimulates history. (This usually causes an infinite loop.) (TODO: Implement ordinal numbered depth doors and smart infinite loop detection)"
 		Tiles.WhiteBlock:
 			text = "White Block: Has the Wonder Block reset immunity but doesn't resimulate history when it moves."
 	return text;

@@ -1283,10 +1283,6 @@ func prepare_audio() -> void:
 	#sounds["intro"] = preload("res://sfx/intro.ogg");
 	#sounds["outro"] = preload("res://sfx/outro.ogg");
 	
-	#depth doors? might end up unused.
-	sounds["dig"] = preload("res://sfx/dig.ogg");
-	sounds["unlock"] = preload("res://sfx/unlock.ogg");
-	
 	#old SFX still in use (afaik)
 	sounds["involuntarybumpother"] = preload("res://sfx/involuntarybumpother.ogg");
 	sounds["bump"] = preload("res://sfx/bump.ogg");
@@ -1300,6 +1296,7 @@ func prepare_audio() -> void:
 	sounds["step"] = preload("res://sfx/step.ogg");
 	sounds["switch"] = preload("res://sfx/switch.ogg");
 	sounds["usegreenality"] = preload("res://sfx/usegreenality.ogg");
+	sounds["infloop"] = preload("res://sfx/infloop.ogg");
 
 	#music_tracks.append(preload("res://music/Mind Palace.ogg"));
 	#music_info.append("Patashu - Mind Palace");
@@ -1691,7 +1688,7 @@ func try_enter(actor: Actor, dir: Vector2, chrono: int, can_push: bool, hypothet
 
 func lose(reason: String, lose_instantly: bool = false, music: String = "lose") -> void:
 	lost = true;
-	winlabel.change_text(reason + "\n\nReally Undo or Restart to continue.")
+	winlabel.change_text(reason + "\n\nUndo or Restart to continue.")
 	lost_speaker.stream = sounds[music];
 	if (lose_instantly):
 		fade_in_lost();
@@ -1714,7 +1711,7 @@ is_retro: bool = false, _retro_old_value = null) -> void:
 		return
 	actor.set(prop, value);
 	
-	if (prop == "broken" and actor == player):
+	if (prop == "broken" and value and actor == player):
 		add_to_animation_server(actor, [Anim.sfx, "ouch"]);
 	
 	add_undo_event([Undo.set_actor_var, actor, prop, old_value, value], chrono_for_maybe_green_actor(actor, chrono));
@@ -2299,6 +2296,10 @@ func increment_iteration() -> void:
 	#iterations, depth, undo event
 	total_iterations += 1;
 	adjust_depth(1);
+	if (current_depth >= 16):
+		lose("Infinite loop.", true, "infloop");
+		resimulation_turn = 0;
+		truncate_history();
 	# hack for the first depth entered?
 	if (current_depth == 1 and tutorial_complete):
 		update_resiminfolabel(current_depth, 0, history_moves.length())
@@ -2307,7 +2308,6 @@ func increment_iteration() -> void:
 	if (is_resimulating):
 		#truncate history and any other cleanup
 		truncate_history();
-		pass
 	# NOW we can set this to true *facepalms*
 	is_resimulating = true;
 	#move everything to home position and state
@@ -2416,7 +2416,11 @@ func time_passes(chrono: int) -> void:
 	# spikes
 	if (has_spikes and chrono < Chrono.META_UNDO and !player.broken):
 		var terrain = terrain_in_tile(player.pos, player, chrono);
-		if (terrain.has(Tiles.Spikes)):
+		if (terrain.has(Tiles.OrangeSpikes)):
+			set_actor_var(player, "broken", true, chrono);
+			add_to_animation_server(player, [Anim.wonderchange], true);
+			TEMP_wonderchanged = true;
+		elif (terrain.has(Tiles.Spikes)):
 			set_actor_var(player, "broken", true, chrono);
 	
 func currently_fast_replay() -> bool:

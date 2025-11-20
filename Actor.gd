@@ -395,7 +395,8 @@ func _process(delta: float) -> void:
 			10: #wonderchange
 				if (animation_timer < 99): #my eyes
 					gamelogic.player.visible = false;
-					gamelogic.play_sound("wonderchange");
+					if (!gamelogic.lost):
+						gamelogic.play_sound("wonderchange");
 					gamelogic.undo_effect_strength = 0.4;
 					gamelogic.undo_effect_per_second = gamelogic.undo_effect_strength*(1);
 					gamelogic.undo_effect_color = gamelogic.red_color;
