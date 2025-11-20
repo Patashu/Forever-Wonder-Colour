@@ -959,6 +959,9 @@ func refresh_puzzles_completed() -> void:
 		else:
 			specific_puzzles_completed.push_back(false);
 
+var has_spikes : bool = false;
+var has_crate_goals : bool = false;
+
 func ready_map() -> void:
 	won = false;
 	end_lose();
@@ -1018,6 +1021,14 @@ func ready_map() -> void:
 		if (ResourceLoader.exists(insight_path)):
 			has_insight_level = true;
 			insight_level_scene = load(insight_path);
+
+	has_crate_goals = false;
+	has_spikes = false;
+	
+	if (any_layer_has_this_tile(Tiles.Spikes) or any_layer_has_this_tile(Tiles.OrangeSpikes)):
+		has_spikes = true;
+	if (any_layer_has_this_tile(Tiles.CrateGoal)):
+		has_crate_goals = true;
 
 	calculate_map_size();
 	make_actors();
@@ -1797,6 +1808,20 @@ func check_won(chrono: int) -> void:
 	Shade.on = false;
 
 	var on_goal = !player.broken and terrain_in_tile(player.pos, player, chrono).has(Tiles.Win);
+	
+	#check crate goal satisfaction
+	if (has_crate_goals):
+		var crate_goals = get_used_cells_by_id_one_array(Tiles.CrateGoal);
+		for crate_goal in crate_goals:
+			var crate_goal_satisfied = false;
+			for actor in actors:
+				if actor.pos == crate_goal and actor.actorname != Actor.Name.DepthDoor:
+					crate_goal_satisfied = true;
+					break;
+			if (!crate_goal_satisfied):
+				locked = true;
+				won = false;
+				break;
 	
 	if (!locked and on_goal):
 		won = true;
