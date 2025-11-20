@@ -300,6 +300,8 @@ func default_save_file() -> void:
 		save_file["fanfare_volume"] = 0.0;
 	if (!save_file.has("master_volume")):
 		save_file["master_volume"] = 0.0;
+	if (!save_file.has("animation_speed")):
+		save_file["animation_speed"] = 1.0;
 	if (!save_file.has("resolution")):
 		var value = 2;
 		if (save_file.has("pixel_scale")):
@@ -847,11 +849,8 @@ func setup_volume() -> void:
 		won_speaker.volume_db = value + master_volume;
 	
 func setup_animation_speed() -> void:
-	if (save_file.has("animation_speed")):
-		var value = save_file["animation_speed"];
-		Engine.time_scale = value;
-	else:
-		save_file["animation_speed"] = 1.0;
+	var value = save_file["animation_speed"];
+	Engine.time_scale = value;
 
 func initialize_shaders() -> void:
 	#each thing that uses a shader has to compile the first time it's used, so... use it now!
@@ -2221,7 +2220,11 @@ func character_move(dir: Vector2) -> bool:
 		if (player.broken):
 			play_sound("bump");
 			return false;
+		# hack to fix the 'faces the wrong way for one frame' bug that also happens in Unwin
+		var old_facing_dir = player.facing_dir;
+		player.facing_dir = dir;
 		finish_animations(Chrono.MOVE);
+		player.facing_dir = old_facing_dir;
 		result = move_actor_relative(player, dir, Chrono.MOVE,
 		false, false, [], false, true);
 	
@@ -3171,7 +3174,8 @@ func _process(delta: float) -> void:
 		if (Input.is_action_just_pressed(action)):
 			key_repeat_timer_dict[action] = 0.0;
 			if (is_dir):
-				key_repeat_timer_max_dict[action] = 0.19;
+				# Unwin is 0.19, I think FWC can be higher
+				key_repeat_timer_max_dict[action] = 0.25;
 				most_recent_direction_held = action;
 			else:
 				key_repeat_timer_max_dict[action] = 0.5;

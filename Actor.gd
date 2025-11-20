@@ -28,16 +28,14 @@ var animation_frame = 0;
 var animations : Array = [];
 var facing_dir : Vector2 = Vector2.RIGHT;
 # animated sprites logic
-var slow_mo = 1.3;
+var slow_mo = 1.8;
 var bump_slowdown = 1.0;
 var frame_timer : float = 0.0;
 var frame_timer_max : float = 0.033*slow_mo;
 var moving : Vector2 = Vector2.ZERO;
 var exerting : bool = false;
-var blink_timer = 0.0;
-var blink_timer_max = 2.0;
-var double_blinking = false;
-var movement_parity = false;
+var movement_parity : bool = false;
+var walk_cycle_length : int = -1;
 # transient multi-push/multi-fall state:
 # basically, things that move become non-colliding until the end of the multi-push/fall tick they're
 # a part of, so other things that shared their tile can move with them
@@ -103,23 +101,31 @@ func set_next_texture(tex: Texture, facing_dir_at_the_time: Vector2) -> void:
 	#frame = 0;
 	match texture:
 		preload("res://assets/player_spritesheet.png"):
-			hframes = 10;
-			vframes = 3;
+			hframes = 11;
+			vframes = 6;
+			var old_walk_cycle_length = float(walk_cycle_length);
 			match (facing_dir_at_the_time):
 				Vector2.DOWN:
 					frame = 0;
 					flip_h = false;
+					walk_cycle_length = 10;
 				Vector2.UP:
-					frame = hframes;
+					frame = hframes*2;
 					flip_h = false;
+					walk_cycle_length = 10;
 				Vector2.LEFT:
-					frame = hframes*2;
+					frame = hframes*4;
 					flip_h = true;
+					walk_cycle_length = 6;
 				Vector2.RIGHT:
-					frame = hframes*2;
+					frame = hframes*4;
 					flip_h = false;
+					walk_cycle_length = 6;
 			base_frame = frame;
-			animation_frame = 0;
+			# be at the same point in the new walk cycle
+			animation_frame = int(animation_frame*walk_cycle_length/old_walk_cycle_length);
+			if (animation_frame > walk_cycle_length):
+					animation_frame = 0;
 
 func pushable(by_actor: Actor) -> bool:
 	if (just_moved):
@@ -182,33 +188,22 @@ func _process(delta: float) -> void:
 	if actorname == Name.Player:
 		if moving != Vector2.ZERO:
 			frame_timer += delta;
-			# ping pong logic
-			if (frame_timer > frame_timer_max*bump_slowdown):
-				frame_timer -= frame_timer_max*bump_slowdown;
+			# walk cycle
+			# was: frame_timer_max*bump_slowdown
+			# new one is so we do exactly half a walk cycle per step
+			if (frame_timer > animation_timer_max/(walk_cycle_length/2)*0.9):
+				frame_timer -= animation_timer_max/(walk_cycle_length/2)*0.9;
 				animation_frame += 1;
-				if (animation_frame > 3):
+				if (animation_frame >= walk_cycle_length):
 					animation_frame = 0;
 			var adjusted_frame = animation_frame;
-			if (adjusted_frame == 0):
-				adjusted_frame = 2;
+			# push cycle
 			if (exerting):
-				adjusted_frame += 6;
-			frame = base_frame + adjusted_frame;
+				adjusted_frame += hframes;
+			frame = base_frame + adjusted_frame + 1;
 		else:
 			animation_frame = 0;
 			frame = base_frame;
-			# blinking logic
-			blink_timer += delta;
-			if (blink_timer > blink_timer_max):
-				blink_timer = 0;
-				if (!double_blinking and gamelogic.rng.randf_range(0.0, 1.0) < 0.2):
-					blink_timer_max = 0.2;
-					double_blinking = true;
-				else:
-					double_blinking = false;
-					blink_timer_max = gamelogic.rng.randf_range(1.5, 2.5);
-			elif (blink_timer_max - blink_timer < 0.1):
-				frame += 4;
 			
 	elif actorname == Name.WonderBlock:
 		if moving != Vector2.ZERO:
@@ -261,7 +256,7 @@ func _process(delta: float) -> void:
 				if (animation_timer == 0):
 					frame_timer = 0;
 					if (movement_parity):
-						animation_frame = 2;
+						animation_frame = walk_cycle_length/2;
 						movement_parity = false;
 					else:
 						movement_parity = true;
@@ -285,16 +280,18 @@ func _process(delta: float) -> void:
 					# let's try some exertion bumps again?
 					if (self.actorname == Name.Player):
 						exerting = true;
+						# was 2.0
 						bump_slowdown = 2.0;
 						if (movement_parity):
-							animation_frame = 2;
+							animation_frame = walk_cycle_length / 2;
 							movement_parity = false;
 						else:
 							movement_parity = true;
 						set_next_texture(get_next_texture(), current_animation[1]);
 					frame_timer = 0;
 				moving = facing_dir;
-				animation_timer_max = 0.095*2*slow_mo;
+				# was 0.095
+				animation_timer_max = 0.050*2*slow_mo;
 				var bump_amount = (animation_timer/animation_timer_max);
 				if (bump_amount > 0.5):
 					bump_amount = 1-bump_amount;
