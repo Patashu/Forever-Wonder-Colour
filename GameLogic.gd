@@ -1029,18 +1029,14 @@ var first_intro = false;
 
 func intro_hop() -> void:
 	pass
-#	if (!ready_done):
-#		player.texture = null;
-#		return;
-#	if (!first_intro):
-#		first_intro = true;
-#		player.texture = null;
-#		add_to_animation_server(player, [Anim.stall, 0.7]);
-#		add_to_animation_server(player, [Anim.intro, 2.8]);
-#		add_to_animation_server(player, [Anim.sing]);
-#		add_to_animation_server(player, [Anim.sing]);
-#	else:
-#		add_to_animation_server(player, [Anim.intro, 0.5]);
+	if (!ready_done):
+		player.texture = null;
+		return;
+	if (!first_intro):
+		first_intro = true;
+		add_to_animation_server(player, [Anim.intro, 2.8]);
+	else:
+		add_to_animation_server(player, [Anim.intro, 0.5]);
 
 func show_button(button: Button) -> void:
 	if (!button.visible):
@@ -1138,6 +1134,7 @@ func make_actors() -> void:
 			terrain_layers[i].set_cellv(player_tile, -1);
 			var old_player_actor = player;
 			player = make_actor(Actor.Name.Player, Vector2(-99, -99), true, i);
+			player.facing_dir = Vector2.UP;
 			where_are_actors[player] = player_tile;
 			player.heaviness = Heaviness.IRON;
 			player.strength = Strength.LIGHT;
@@ -2721,9 +2718,7 @@ func update_animation_server(skip_globals: bool = false) -> void:
 				add_to_animation_server(player, [Anim.fade, 1.0, 0.0, 3.0]);
 			else:
 				Shade.on = true;
-				#add_to_animation_server(player, [Anim.sing]);
-				#add_to_animation_server(player, [Anim.outro, 2.2]);
-				add_to_animation_server(player, [Anim.fade, 1.0, 0.0, 3.0]);
+				add_to_animation_server(player, [Anim.outro, 2.8]);
 		return;
 	
 	# we found new animations - give them to everyone at once

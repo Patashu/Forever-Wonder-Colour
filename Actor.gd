@@ -185,7 +185,7 @@ func _process(delta: float) -> void:
 	
 	
 	#animated sprites
-	if actorname == Name.Player:
+	if actorname == Name.Player and hframes > 1:
 		if moving != Vector2.ZERO:
 			frame_timer += delta;
 			# walk cycle
@@ -330,9 +330,44 @@ func _process(delta: float) -> void:
 				else:
 					is_done = false;
 			7: #intro
-				is_done = true;
+				animation_timer_max = current_animation[1];
+				animation_timer += delta;
+				if (animation_timer > animation_timer_max):
+					region_enabled = false;
+					is_done = true;
+					offset = Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+					update_graphics();
+				else:
+					self.texture = preload("res://assets/player_spritesheet.png");
+					visible = true;
+					frame = 0;
+					hframes = 1;
+					vframes = 1;
+					region_enabled = true;
+					var xx = 1+int(animation_timer*10)%10;
+					region_rect = Rect2(16*xx, 16*2, 16, 16*(animation_timer/animation_timer_max));
+					offset = Vector2(8, 8+8*(1-(animation_timer/animation_timer_max)))
+					is_done = false;
 			8: #outro
-				is_done = true;
+				animation_timer_max = current_animation[1];
+				animation_timer += delta;
+				if (animation_timer > animation_timer_max):
+					region_enabled = false;
+					is_done = true;
+					offset = Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+					update_graphics();
+					self.modulate = Color(1, 1, 1, 0);
+				else:
+					self.texture = preload("res://assets/player_spritesheet.png");
+					visible = true;
+					frame = 0;
+					hframes = 1;
+					vframes = 1;
+					region_enabled = true;
+					var xx = 1+int(animation_timer*10)%10;
+					region_rect = Rect2(16*xx, 16*0, 16, 16*(1-(animation_timer/animation_timer_max)));
+					offset = Vector2(8, 8+8*((animation_timer/animation_timer_max)))
+					is_done = false;
 			9: #spliceflower
 				gamelogic.play_sound("spliceflower");
 				if (animation_timer < 99): #don't make ripples while a replay is going fast
