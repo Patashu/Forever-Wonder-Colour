@@ -1169,6 +1169,7 @@ func make_actors() -> void:
 	# crates
 	extract_actors(Tiles.StoneBlock, Actor.Name.StoneBlock, Heaviness.IRON, Strength.WOODEN, false);
 	extract_actors(Tiles.WonderBlock, Actor.Name.WonderBlock, Heaviness.IRON, Strength.WOODEN, false);
+	extract_actors(Tiles.WhiteBlock, Actor.Name.WhiteBlock, Heaviness.IRON, Strength.WOODEN, false);
 	# doors
 	extract_actors(Tiles.DepthDoor, Actor.Name.DepthDoor, Heaviness.SUPERHEAVY, Strength.WOODEN, false);
 
@@ -1402,9 +1403,9 @@ is_move: bool = false, can_push: bool = true) -> int:
 	var result = move_actor_to(actor, actor.pos + dir, chrono, hypothetical, is_retro,
 	pushers_list, was_push, is_move, can_push);
 	
-	if (!hypothetical and result == Success.Yes and actor.actorname == Actor.Name.WonderBlock):
+	if (!hypothetical and result == Success.Yes and (actor.actorname == Actor.Name.WonderBlock or actor.actorname == Actor.Name.WhiteBlock)):
 		set_actor_var(actor, "home_pos", actor.pos, chrono);
-		if (chrono == Chrono.MOVE):
+		if (chrono == Chrono.MOVE and actor.actorname == Actor.Name.WonderBlock):
 			TEMP_wonderchanged = true;
 			add_to_animation_server(actor, [Anim.wonderchange], true);
 			
@@ -2312,14 +2313,14 @@ func increment_iteration() -> void:
 	is_resimulating = true;
 	#move everything to home position and state
 	for actor in actors:
-		if (actor.actorname != Actor.Name.WonderBlock and actor.actorname != Actor.Name.DepthDoor):
+		if (actor.actorname != Actor.Name.WonderBlock and actor.actorname != Actor.Name.DepthDoor and actor.actorname != Actor.Name.WhiteBlock):
 			reset_to_home(actor);
 	#handle resetfrag (TODO: what does player/wonder block do?)
 	#yay O(n^2)
 	for actor in actors:
 		if (actor.actorname == Actor.Name.StoneBlock):
 			for actor2 in actors:
-				if (actor2.actorname == Actor.Name.WonderBlock and actor2.pos == actor.pos):
+				if ((actor2.actorname == Actor.Name.WonderBlock || actor2.actorname == Actor.Name.WhiteBlock) and actor2.pos == actor.pos):
 					set_actor_var(actor, "broken", true, Chrono.MOVE);
 					break;
 	#loop through history

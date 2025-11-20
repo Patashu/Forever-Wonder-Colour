@@ -139,6 +139,7 @@ func initialize_picker_array() -> void:
 	picker_array.append(Tiles.CrateGoal);
 	picker_array.append(Tiles.Spikes);
 	picker_array.append(Tiles.OrangeSpikes);
+	picker_array.append(Tiles.WhiteBlock);
 	
 	for i in range(picker_array.size()):
 		var x = i % 21;

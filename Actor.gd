@@ -48,6 +48,7 @@ enum Name {
 	Goal,
 	StoneBlock,
 	WonderBlock,
+	WhiteBlock,
 	DepthDoor,
 }
 
@@ -79,6 +80,13 @@ func get_next_texture() -> Texture:
 				return null;
 			else:
 				return preload("res://assets/wonder_block.png");
+				
+		Name.WhiteBlock:
+			if broken:
+				return null;
+			else:
+				return preload("res://assets/white_block.png");
+				
 				
 		Name.DepthDoor:
 			hframes = 14;
@@ -154,7 +162,7 @@ func set_door_depth(door_depth: int) -> void:
 
 func _process(delta: float) -> void:
 	# sparkles
-	if (actorname == Name.WonderBlock):
+	if (actorname == Name.WonderBlock or actorname == Name.WhiteBlock):
 		sparkle_timer += delta;
 		if (sparkle_timer >= sparkle_timer_max):
 			sparkle_timer -= sparkle_timer_max*gamelogic.rng.randf_range(0.9, 1.1);
@@ -167,7 +175,7 @@ func _process(delta: float) -> void:
 			sprite.centered = true;
 			sprite.scale = Vector2(0.25, 0.25);
 			sprite.modulate = Color("FF7F00");
-			if (gamelogic.rng.randi_range(0, 1) == 1):
+			if (actorname == Name.WhiteBlock or gamelogic.rng.randi_range(0, 1) == 1 ):
 				sprite.modulate = Color("FFEBD8");
 			self.add_child(sprite)
 	
@@ -204,7 +212,7 @@ func _process(delta: float) -> void:
 			animation_frame = 0;
 			frame = base_frame;
 			
-	elif actorname == Name.WonderBlock:
+	elif actorname == Name.WonderBlock or actorname == Name.WhiteBlock:
 		if moving != Vector2.ZERO:
 			frame_timer += delta;
 			if (frame_timer > frame_timer_max):
@@ -219,7 +227,7 @@ func _process(delta: float) -> void:
 				sprite.centered = true;
 				sprite.scale = Vector2(0.25, 0.25);
 				sprite.modulate = Color("FF7F00");
-				if (gamelogic.rng.randi_range(0, 1) == 1):
+				if (actorname == Name.WhiteBlock or gamelogic.rng.randi_range(0, 1) == 1):
 					sprite.modulate = Color("FFEBD8");
 				gamelogic.overactorsparticles.add_child(sprite);
 	elif actorname == Name.StoneBlock:
