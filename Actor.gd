@@ -289,7 +289,12 @@ func _process(delta: float) -> void:
 							movement_parity = false;
 						else:
 							movement_parity = true;
-						set_next_texture(get_next_texture(), current_animation[1]);
+						#ok this is not ok because it'll run mid animations, see I'm eventually broken and kill me.
+						#was this an unwin-exclusive hack?
+						#ah I need it to change directions when bumping.
+						#WELL, nothing ever changes textures in FWC so I can just pass in the current texture and that seems safer anyhow.
+						#(I feel like something else would have worked better but...)
+						set_next_texture(self.texture, current_animation[1]);
 					frame_timer = 0;
 				moving = facing_dir;
 				# was 0.095
@@ -449,9 +454,9 @@ func _process(delta: float) -> void:
 						animation_timer = animation_timer_max;
 						is_done = true;
 					if (was_broken):
-						frame = (animation_timer/animation_timer_max)*hframes;
+						frame = clamp((animation_timer/animation_timer_max)*hframes, 0, hframes-1);
 					else:
-						frame = (1-(animation_timer/animation_timer_max))*hframes;
+						frame =  clamp((1-(animation_timer/animation_timer_max))*hframes, 0, hframes-1);
 			16: #depth_door_fast
 				var was_broken = current_animation[1];
 				if (was_broken):

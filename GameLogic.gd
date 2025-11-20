@@ -1473,7 +1473,7 @@ is_move: bool = false, can_push: bool = true) -> int:
 				TEMP_stumbled = true;
 		# bump animation always happens, I think?
 		# unlike in Entwined Time, let's try NOT adding the bump at the start
-		add_to_animation_server(actor, [Anim.bump, dir], false);
+		add_to_animation_server(actor, [Anim.bump, dir, actor.broken], false);
 	
 	return success;
 
@@ -1714,8 +1714,8 @@ is_retro: bool = false, _retro_old_value = null) -> void:
 		return
 	actor.set(prop, value);
 	
-	#if (prop == "broken"):
-	#	pass
+	if (prop == "broken" and actor == player):
+		add_to_animation_server(actor, [Anim.sfx, "ouch"]);
 	
 	add_undo_event([Undo.set_actor_var, actor, prop, old_value, value], chrono_for_maybe_green_actor(actor, chrono));
 	
@@ -2331,6 +2331,7 @@ func increment_iteration() -> void:
 		animation_substep(Chrono.MOVE);
 		#add_to_animation_server(player, [Anim.stall, 0.1]); # hack so webstartup has time to appear
 		add_to_animation_server(player, [Anim.intro, 2.8]);
+	animation_substep(Chrono.MOVE);
 	for h_i in range(history_moves.length()):
 		resimulation_turn = h_i;
 		# TODO: first 1mil turns
@@ -2339,10 +2340,12 @@ func increment_iteration() -> void:
 		var h_lower = h.to_lower();
 		var was_push = h_lower != h;
 		var dir = char_to_dir[h_lower];
-		animation_substep(Chrono.MOVE);
 		add_to_animation_server(player, [Anim.sfx, "step"]);
+		# fixes 'sidestep' bug I found, mimics code in character_move. should've decoupled better...
+		set_actor_var(player, "facing_dir", dir, Chrono.MOVE);
 		var success = move_actor_relative(player, dir, Chrono.MOVE,
 		false, false, [], was_push, true);
+		time_passes(Chrono.MOVE);
 		var now_push = TEMP_didpush;
 		TEMP_didpush = false;
 		# emoticon reactions
@@ -2409,6 +2412,12 @@ var char_to_dir : Dictionary = { "w": Vector2.UP, "a": Vector2.LEFT, "s": Vector
 
 func time_passes(chrono: int) -> void:
 	animation_substep(chrono);
+	
+	# spikes
+	if (has_spikes and chrono < Chrono.META_UNDO and !player.broken):
+		var terrain = terrain_in_tile(player.pos, player, chrono);
+		if (terrain.has(Tiles.Spikes)):
+			set_actor_var(player, "broken", true, chrono);
 	
 func currently_fast_replay() -> bool:
 	if (!doing_replay):
