@@ -1417,6 +1417,8 @@ is_retro: bool = false, pushers_list: Array = [], was_push: bool = false,
 is_move: bool = false, can_push: bool = true) -> int:
 	var dir = pos - actor.pos;
 	var old_pos = actor.pos;
+	#hack for forever wonder colour 'remembered I pushed'
+	var passed_in_was_push = was_push;
 	
 	var success = Success.No;
 
@@ -1425,6 +1427,7 @@ is_move: bool = false, can_push: bool = true) -> int:
 	if (success == Success.Yes and !hypothetical):
 		
 		if (!is_retro):
+			#hack for forever wonder colour 'remembered I pushed'
 			was_push = pushers_list.size() > 0;
 		actor.pos = pos;
 		
@@ -1446,7 +1449,7 @@ is_move: bool = false, can_push: bool = true) -> int:
 				TEMP_didpush = true;
 				player.exerting = true;
 		
-		add_to_animation_server(actor, [Anim.move, dir, is_retro, false]);
+		add_to_animation_server(actor, [Anim.move, dir, is_retro, false, passed_in_was_push]);
 
 		return success;
 	elif (success != Success.Yes):
@@ -2312,7 +2315,7 @@ func increment_iteration() -> void:
 		animation_substep(Chrono.MOVE);
 		add_to_animation_server(player, [Anim.sfx, "step"]);
 		var success = move_actor_relative(player, dir, Chrono.MOVE,
-		false, false, [], false, true);
+		false, false, [], was_push, true);
 		var now_push = TEMP_didpush;
 		TEMP_didpush = false;
 		# emoticon reactions
@@ -2369,7 +2372,7 @@ func reset_to_home(actor: Actor) -> void:
 		actor.pos = actor.home_pos;
 		add_undo_event([Undo.move, actor, dir, false],
 		chrono_for_maybe_green_actor(actor, Chrono.MOVE));
-		add_to_animation_server(actor, [Anim.move, dir, false, true], true);
+		add_to_animation_server(actor, [Anim.move, dir, false, true, false], true);
 
 var char_to_dir : Dictionary = { "w": Vector2.UP, "a": Vector2.LEFT, "s": Vector2.DOWN, "d": Vector2.RIGHT };
 
@@ -3266,7 +3269,7 @@ func _process(delta: float) -> void:
 	sounds_played_this_frame.clear();
 	
 	#time scale during resim
-	if (resiminfolabel.visible and Input.is_action_pressed("ui_accept")):
+	if (resiminfolabel.visible and Input.is_action_pressed("ui_accept") and ui_stack.size() == 0):
 		Engine.time_scale = save_file["animation_speed"]*3.0;
 		# insta-skip if we're holding a direction (but it's not a 'real' press)
 		if Input.is_action_pressed("ui_up") or Input.is_action_pressed("ui_down") or Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right"):

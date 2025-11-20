@@ -252,6 +252,9 @@ func _process(delta: float) -> void:
 			0: #move
 				moving = current_animation[1];
 				var wonder = current_animation[3];
+				var was_push = current_animation[4];
+				if (was_push):
+					exerting = true;
 				# afterimage if it was a retro move
 				if (animation_timer == 0):
 					frame_timer = 0;
@@ -427,8 +430,10 @@ func _process(delta: float) -> void:
 				if (animation_timer > animation_timer_max):
 					gamelogic.update_resiminfolabel(1, 0, turn_max);
 					is_done = true;
-					var a = preload("res://WebStartup.tscn").instance();
-					gamelogic.add_to_ui_stack(a);
+					# don't do this if we finish animations
+					if (animation_timer < 10):
+						var a = preload("res://WebStartup.tscn").instance();
+						gamelogic.add_to_ui_stack(a);
 				else:
 					#just a straight count of frames isn't random looking enough lol
 					gamelogic.update_resiminfolabel(1, int(1000000.0*((animation_timer+gamelogic.rng.randf_range(-0.005, 0.005))/animation_timer_max))-1000000, turn_max);
