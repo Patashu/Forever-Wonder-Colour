@@ -493,7 +493,7 @@ func tooltip_for_tile(tile: int) -> String:
 		Tiles.DepthDoor:
 			text = "Depth Door: Solid unless current Depth is greater than or equal to the displayed number (or vice versa, if it's given a negative Door Depth)."
 		Tiles.SpliceFlower:
-			text = "Splice Flower: When the Player steps here: Erase history (stopping re-simulation if it was in progress). This is the new turn 0. Delete this."
+			text = "Splice Flower: When the Player steps here: Consume Splice Flower. Erase history (stopping re-simulation if it was in progress). This is the new turn 0."
 		Tiles.NoPlayer:
 			text = "No Player: Solid to Players."
 		Tiles.NoStone:
