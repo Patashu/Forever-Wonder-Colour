@@ -57,6 +57,7 @@ func _ready() -> void:
 	searchbox.connect("mouse_exited", self, "_searchbox_mouse_exited");
 	
 	gamelogic.tile_changes(true);
+	gamelogic.finish_animations(0);
 	
 	if (gamelogic.test_mode):
 		custom_string = gamelogic.custom_string;
