@@ -1838,6 +1838,12 @@ func check_won(chrono: int) -> void:
 				won = false;
 				break;
 	
+	for goal in goals:
+		if (locked):
+			goal.modulate.a = 0.5;
+		else:
+			goal.modulate.a = 1.0;
+	
 	if (!locked and on_goal):
 		won = true;
 		var just_showed_lore3 = false;
