@@ -1809,22 +1809,15 @@ func adjust_meta_turn(amount: int, chrono: int) -> void:
 	# print("=== IT IS NOW META TURN " + str(meta_turn) + " ===");
 	if (won or lost or amount >= 0):
 		check_won(chrono);
+	else:
+		lock_goals();
 	TEMP_didpush = false;
 	TEMP_stumbled = false;
 	TEMP_wonderchanged = false;
 	TEMP_steppedonspliceflower = false;
 	
-func check_won(chrono: int) -> void:
-	won = false;
+func lock_goals() -> bool:
 	var locked = false;
-	
-	if (lost):
-		return
-	Shade.on = false;
-
-	var on_goal = !player.broken and terrain_in_tile(player.pos, player, chrono).has(Tiles.Win);
-	
-	#check crate goal satisfaction
 	if (has_crate_goals):
 		var crate_goals = get_used_cells_by_id_one_array(Tiles.CrateGoal);
 		for crate_goal in crate_goals:
@@ -1843,6 +1836,21 @@ func check_won(chrono: int) -> void:
 			goal.modulate.a = 0.5;
 		else:
 			goal.modulate.a = 1.0;
+			
+	return locked;
+	
+func check_won(chrono: int) -> void:
+	won = false;
+	var locked = false;
+	
+	if (lost):
+		return
+	Shade.on = false;
+
+	var on_goal = !player.broken and terrain_in_tile(player.pos, player, chrono).has(Tiles.Win);
+	
+	#check crate goal satisfaction
+	locked = lock_goals();
 	
 	if (!locked and on_goal):
 		won = true;
