@@ -13,7 +13,7 @@ onready var levellabel : Label = levelscene.get_node("LevelLabel");
 onready var levelstar : Sprite = levelscene.get_node("LevelStar");
 onready var winlabel : Node2D = levelscene.get_node("WinLabel");
 onready var metainfolabel : Label = levelscene.get_node("MetaInfoLabel");
-onready var resiminfolabel : Label = levelscene.get_node("ResimInfoLabel");
+onready var resiminfolabel : RichTextLabel = levelscene.get_node("ResimInfoLabel");
 onready var downarrow : Sprite = levelscene.get_node("DownArrow");
 onready var leftarrow : Sprite = levelscene.get_node("LeftArrow");
 onready var rightarrow : Sprite = levelscene.get_node("RightArrow");
@@ -396,6 +396,7 @@ func time_to_start() -> void:
 	if (!first_intro):
 		fadeout_timer_max = 3.0;
 		intro_hop();
+	hoping_to_restart_music = false;
 
 var GuiHolder : CanvasLayer;
 
@@ -2765,12 +2766,18 @@ func update_resiminfolabel(depth: int, turn: int, turnmax: int) -> void:
 		ANIM_turnmax += 1000000;
 	if (ANIM_depth > 0):
 		resiminfolabel.visible = true;
-		resiminfolabel.text = "Resimulating: " + str(ANIM_turn) + "/" + str(ANIM_turnmax) + "\nCurrent Depth: " + str(ANIM_depth);
+		var color = "#FF7F00";
+		if (ANIM_depth % 3 == 2):
+			color = "#FFEBD8";
+		if (ANIM_depth % 3 == 0):
+			color = "#4F67FF";
+		resiminfolabel.bbcode_text = "[center]Resimulating: " + str(ANIM_turn) + "/" + str(ANIM_turnmax) + "\n[color=" + color + "]Current Depth: " + str(ANIM_depth) + "[/color]";
 		if (tutorial_complete and !is_custom and !in_insight_level):
 			if (Input.is_action_pressed("ui_accept")):
-				resiminfolabel.text += "\n\n(Skip by pressing any direction)";
+				resiminfolabel.bbcode_text += "\n(Skip by pressing any direction)";
 			else:
-				resiminfolabel.text += "\n\n(Speed up with " + human_readable_input("ui_accept") + ")";
+				resiminfolabel.bbcode_text += "\n(Speed up with " + human_readable_input("ui_accept") + ")";
+		resiminfolabel.bbcode_text += "[/center]"
 	else:
 		resiminfolabel.visible = false;
 		play_sound("wonderend");
