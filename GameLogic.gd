@@ -386,11 +386,13 @@ func _ready() -> void:
 func time_to_start() -> void:
 	pass
 	play_sound("introfwc");
-	#current_track = -1;
-	#target_track = 0;
-	#fadeout_timer = 0.0;
-	#fadeout_timer_max = 6.8;
+	current_track = -1;
+	target_track = 0;
+	fadeout_timer = 0.0;
+	if (first_intro):
+		fadeout_timer_max = 2.0;
 	if (!first_intro):
+		fadeout_timer_max = 3.0;
 		intro_hop();
 
 var GuiHolder : CanvasLayer;
@@ -1301,9 +1303,9 @@ func prepare_audio() -> void:
 	sounds["usegreenality"] = preload("res://sfx/usegreenality.ogg");
 	sounds["infloop"] = preload("res://sfx/infloop.ogg");
 
-	#music_tracks.append(preload("res://music/Mind Palace.ogg"));
-	#music_info.append("Patashu - Mind Palace");
-	#music_db.append(0.0);
+	music_tracks.append(preload("res://music/Eternal Edifice.ogg"));
+	music_info.append("Patashu - Eternal Edifice");
+	music_db.append(3.0);
 	
 	for i in range (8):
 		var speaker = AudioStreamPlayer.new();

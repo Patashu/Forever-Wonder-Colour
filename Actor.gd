@@ -405,6 +405,8 @@ func _process(delta: float) -> void:
 					gamelogic.player.visible = false;
 					if (!gamelogic.lost):
 						gamelogic.play_sound("wonderchange");
+						if (!gamelogic.tutorial_complete):
+							gamelogic.music_speaker.stop();
 					gamelogic.undo_effect_strength = 0.4;
 					gamelogic.undo_effect_per_second = gamelogic.undo_effect_strength*(1);
 					gamelogic.undo_effect_color = gamelogic.red_color;
