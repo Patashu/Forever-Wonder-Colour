@@ -2341,7 +2341,7 @@ func increment_iteration() -> void:
 		add_to_animation_server(player, [Anim.new_iteration]);
 	else:
 		add_to_animation_server(player, [Anim.stall, 0.4]);
-		add_to_animation_server(player, [Anim.outside_universe, 2.0, history_moves.length()]);
+		add_to_animation_server(player, [Anim.outside_universe, current_depth, 2.0, history_moves.length()]);
 		animation_substep(Chrono.MOVE);
 		#add_to_animation_server(player, [Anim.stall, 0.1]); # hack so webstartup has time to appear
 		add_to_animation_server(player, [Anim.intro, 2.0]);

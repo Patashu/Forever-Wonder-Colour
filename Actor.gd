@@ -442,10 +442,11 @@ func _process(delta: float) -> void:
 				if (animation_timer == 0):
 					gamelogic.play_sound("theuniverse");
 				animation_timer += delta;
-				animation_timer_max = current_animation[1];
-				var turn_max = current_animation[2];
+				var current_depth = current_animation[1];
+				animation_timer_max = current_animation[2];
+				var turn_max = current_animation[3];
 				if (animation_timer > animation_timer_max):
-					gamelogic.update_resiminfolabel(1, 0, turn_max);
+					gamelogic.update_resiminfolabel(current_depth, 0, turn_max);
 					is_done = true;
 					# don't do this if we finish animations
 					if (animation_timer < 10):
@@ -453,7 +454,7 @@ func _process(delta: float) -> void:
 						gamelogic.add_to_ui_stack(a);
 				else:
 					#just a straight count of frames isn't random looking enough lol
-					gamelogic.update_resiminfolabel(1, int(1000000.0*((animation_timer+gamelogic.rng.randf_range(-0.005, 0.005))/animation_timer_max))-1000000, turn_max);
+					gamelogic.update_resiminfolabel(current_depth, int(1000000.0*((animation_timer+gamelogic.rng.randf_range(-0.005, 0.005))/animation_timer_max))-1000000, turn_max);
 					is_done = false;
 			15: #depth_door_slow
 				var was_broken = current_animation[1];
