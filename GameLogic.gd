@@ -2373,7 +2373,6 @@ func increment_iteration() -> void:
 		set_actor_var(player, "facing_dir", dir, Chrono.MOVE);
 		var success = move_actor_relative(player, dir, Chrono.MOVE,
 		false, false, [], was_push, true);
-		time_passes(Chrono.MOVE);
 		var now_push = TEMP_didpush;
 		TEMP_didpush = false;
 		# emoticon reactions
@@ -2386,6 +2385,8 @@ func increment_iteration() -> void:
 			add_to_animation_server(player, [Anim.emoticon, "?"], true);
 		elif (!was_push and now_push):
 			add_to_animation_server(player, [Anim.emoticon, "!"], true);
+		# time passes (do this after emoticon reactions for animation timing)
+		time_passes(Chrono.MOVE);
 		# splice flower interrupts
 		if (TEMP_steppedonspliceflower):
 			splice_flower();
