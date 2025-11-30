@@ -2325,7 +2325,7 @@ func increment_iteration() -> void:
 	adjust_depth(1);
 	if (current_depth >= 16):
 		lose("Infinite loop.", true, "infloop");
-		resimulation_turn = 0;
+		resimulation_turn = -1; #un-fixing the off-by-one lmao
 		truncate_history();
 	# hack for the first depth entered?
 	if (current_depth == 1 and tutorial_complete):
