@@ -186,6 +186,8 @@ var TEMP_wonderchanged : bool = false;
 var TEMP_didpush : bool = false;
 var TEMP_stumbled : bool = false;
 var TEMP_steppedonspliceflower : bool = false;
+# and another hack fix
+var hoping_to_restart_music : bool = false;
 
 # for afterimages
 var afterimage_server : Dictionary = {}
@@ -1755,6 +1757,11 @@ func meta_undo_replay() -> bool:
 	return true;
 
 func finish_animations(chrono: int) -> void:
+	if (hoping_to_restart_music):
+		hoping_to_restart_music = false;
+		fadeout_timer = 0.0;
+		fadeout_timer_max = 0.1;
+	
 	undo_effect_color = Color.transparent;
 	
 	if (chrono >= Chrono.META_UNDO):
