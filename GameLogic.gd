@@ -1054,6 +1054,7 @@ func intro_hop() -> void:
 	if (!ready_done):
 		player.texture = null;
 		return;
+	player.visible = false;
 	if (!first_intro):
 		first_intro = true;
 		add_to_animation_server(player, [Anim.intro, 2.8]);

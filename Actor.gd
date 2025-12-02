@@ -345,6 +345,7 @@ func _process(delta: float) -> void:
 				else:
 					is_done = false;
 			7: #intro
+				visible = true;
 				animation_timer_max = current_animation[1];
 				animation_timer += delta;
 				if (animation_timer > animation_timer_max):
@@ -354,7 +355,6 @@ func _process(delta: float) -> void:
 					update_graphics();
 				else:
 					self.texture = preload("res://assets/player_spritesheet.png");
-					visible = true;
 					frame = 0;
 					hframes = 1;
 					vframes = 1;
@@ -364,6 +364,7 @@ func _process(delta: float) -> void:
 					offset = Vector2(8, 8+8*(1-(animation_timer/animation_timer_max)))
 					is_done = false;
 			8: #outro
+				visible = true;
 				animation_timer_max = current_animation[1];
 				animation_timer += delta;
 				if (animation_timer > animation_timer_max):
@@ -371,10 +372,10 @@ func _process(delta: float) -> void:
 					is_done = true;
 					offset = Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
 					update_graphics();
+					visible = false;
 					self.modulate = Color(1, 1, 1, 0);
 				else:
 					self.texture = preload("res://assets/player_spritesheet.png");
-					visible = true;
 					frame = 0;
 					hframes = 1;
 					vframes = 1;
