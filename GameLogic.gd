@@ -102,6 +102,7 @@ enum Anim {
 	outside_universe, #14
 	depth_door_slow, #15
 	depth_door_fast, #16
+	shatter, #17
 }
 
 enum Greenness {
@@ -1305,6 +1306,7 @@ func prepare_audio() -> void:
 	sounds["switch"] = preload("res://sfx/switch.ogg");
 	sounds["usegreenality"] = preload("res://sfx/usegreenality.ogg");
 	sounds["infloop"] = preload("res://sfx/infloop.ogg");
+	sounds["broken"] = preload("res://sfx/broken.ogg");
 
 	music_tracks.append(preload("res://music/Eternal Edifice.ogg"));
 	music_info.append("Patashu - Eternal Edifice");
@@ -2349,7 +2351,7 @@ func increment_iteration() -> void:
 	for actor in actors:
 		if (actor.actorname != Actor.Name.WonderBlock and actor.actorname != Actor.Name.DepthDoor and actor.actorname != Actor.Name.WhiteBlock):
 			reset_to_home(actor);
-	#handle resetfrag (TODO: what does player/wonder block do?)
+	#handle resetfrag
 	#yay O(n^2)
 	for actor in actors:
 		if (actor.actorname == Actor.Name.StoneBlock):
@@ -2357,6 +2359,11 @@ func increment_iteration() -> void:
 				if ((actor2.actorname == Actor.Name.WonderBlock || actor2.actorname == Actor.Name.WhiteBlock) and actor2.pos == actor.pos):
 					set_actor_var(actor, "broken", true, Chrono.MOVE);
 					break;
+	# player resetfrags blocks
+	for actor in actors:
+		if (actor != player and player.pos == actor.pos and actor.actorname != Actor.Name.DepthDoor):
+			add_to_animation_server(actor, [Anim.shatter]);
+			set_actor_var(actor, "broken", true, Chrono.MOVE);
 	#loop through history
 	if (tutorial_complete):
 		add_to_animation_server(null, [Anim.resim_values, current_depth, 0, history_moves.length()], true);

@@ -22,7 +22,8 @@ text = "Rules Overview
 * (Note that unsuccessful moves are not a part of history, and thus won't be replayed, but a previously successful move may fail or do something different.)
 * A Wonder Block changing position while already re-simulating history will truncate history at that move and start a deeper re-simulation (Depth 2, 3 and so on).
 * Depth Doors close or open based on the current Depth. (Bump one to learn more.)
-* Stepping on a Splice Flower consumes it and set the current state as 'Turn 0', erasing prior history."
+* Stepping on a Splice Flower consumes it, erasing prior history. The current state is Turn 0.
+* At the start of history, two actors can't overlap: Player beats Wonder Block beats Stone Block."
 align = 1
 autowrap = true
 

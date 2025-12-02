@@ -479,6 +479,28 @@ func _process(delta: float) -> void:
 					frame = hframes-1;
 				else:
 					frame = 0;
+			17: #shatter
+				var overactorsparticles = gamelogic.overactorsparticles;
+				for i in range(4):
+					var sprite = Sprite.new();
+					sprite.set_script(preload("res://FadingSprite.gd"));
+					sprite.texture = self.texture;
+					sprite.position = self.position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+					sprite.position.x += -6+(i%2)*12;
+					sprite.position.y += -6+floor(i/2)*12;
+					sprite.centered = true;
+					sprite.velocity = Vector2(gamelogic.rng.randf_range(6, 12), gamelogic.rng.randf_range(6, 12));
+					sprite.fadeout_timer_max = 2.0;
+					sprite.region_enabled = true;
+					sprite.region_rect = Rect2(8, 8, 8, 8);
+					if (i % 2 == 0):
+						sprite.velocity.x *= -1;
+						sprite.region_rect.position.x -= 8;
+					if (floor(i / 2) == 0):
+						sprite.velocity.y *= -1;
+						sprite.region_rect.position.y -= 8;
+					overactorsparticles.add_child(sprite);
+				gamelogic.play_sound("broken");
 		if (is_done):
 			animations.pop_front();
 			animation_timer = 0;
