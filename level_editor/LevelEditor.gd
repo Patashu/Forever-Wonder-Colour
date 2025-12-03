@@ -23,6 +23,10 @@ enum Tiles {
 	OrangeSpikes,
 	WhiteBlock,
 	NoWhite,
+	Hole,
+	FloorboardsBlue,
+	FloorboardsWhite,
+	FloorboardsOrange,
 }
 
 onready var gamelogic = get_tree().get_root().find_node("LevelScene", true, false).gamelogic;
@@ -143,6 +147,10 @@ func initialize_picker_array() -> void:
 	picker_array.append(Tiles.Spikes);
 	picker_array.append(Tiles.OrangeSpikes);
 	picker_array.append(Tiles.WhiteBlock);
+	picker_array.append(Tiles.Hole);
+	picker_array.append(Tiles.FloorboardsBlue);
+	picker_array.append(Tiles.FloorboardsWhite);
+	picker_array.append(Tiles.FloorboardsOrange);
 	
 	for i in range(picker_array.size()):
 		var x = i % 21;
@@ -494,7 +502,7 @@ func tooltip_for_tile(tile: int) -> String:
 		Tiles.DepthDoor:
 			text = "Depth Door: Solid unless current Depth is greater than or equal to the displayed number (or vice versa, if it's given a negative Door Depth)."
 		Tiles.SpliceFlower:
-			text = "Splice Flower: When the Player steps here: Consume Splice Flower. Erase history (stopping re-simulation if it was in progress). This is the new turn 0."
+			text = "Splice Flower: When the Player steps here: Consume Splice Flower. Erase history (stopping re-simulation if it was in progress). This is the new turn 0. (Revive the player if dead.)"
 		Tiles.NoPlayer:
 			text = "No Player: Solid to Players."
 		Tiles.NoStone:
@@ -508,9 +516,17 @@ func tooltip_for_tile(tile: int) -> String:
 		Tiles.Spikes:
 			text = "Spikes: Breaks the Player on contact."
 		Tiles.OrangeSpikes:
-			text = "Orange Spikes: Breaks the Player on contact and resimulates history. (This usually causes an infinite loop.) (Future work: Implement ordinal numbered depth doors and smart infinite loop detection)"
+			text = "Orange Spikes: Breaks the Player on contact and resimulates history. (This usually causes an infinite loop.) ((Future work: Implement ordinal numbered depth doors and smart infinite loop detection))"
 		Tiles.WhiteBlock:
 			text = "White Block: Has the Wonder Block reset immunity but doesn't resimulate history when it moves."
+		Tiles.Hole:
+			text = "Hole: Players and Blocks fall into this and fill the hole. ((Future work: Connected holes, basically like a z == -1 layer.))"
+		Tiles.FloorboardsBlue:
+			text = "Blue Floorboards: Hides terrain and actors rendered under this. Consumed when the player steps off this."
+		Tiles.FloorboardsWhite:
+			text = "White Floorboards: Reset immune Blue Floorboards."
+		Tiles.FloorboardsOrange:
+			text = "Orange Floorboards: Reset immune Blue Floorboards that cause a Wonder Reset when broken."
 	return text;
 	
 func picker_tooltip() -> void:

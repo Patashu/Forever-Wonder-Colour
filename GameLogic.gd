@@ -81,6 +81,8 @@ enum Undo {
 	history_add1, #5
 	history_removed_these, #6
 	iteration, #7
+	remember_terrain_change, #8
+	forget_terrain_changes, #9
 }
 
 # and same for animations
@@ -102,7 +104,9 @@ enum Anim {
 	outside_universe, #14
 	depth_door_slow, #15
 	depth_door_fast, #16
-	shatter, #17
+	shatter_actor, #17
+	shatter_terrain, #18
+	fall, #19
 }
 
 enum Greenness {
@@ -134,7 +138,11 @@ enum Tiles {
 	Spikes,
 	OrangeSpikes,
 	WhiteBlock,
-	NoWhite
+	NoWhite,
+	Hole,
+	FloorboardsBlue,
+	FloorboardsWhite,
+	FloorboardsOrange,
 }
 
 # information about the level
@@ -175,6 +183,7 @@ var is_resimulating : bool = false;
 var resimulation_turn : int = 0;
 var total_iterations : int = 0;
 var door_depths : String = "";
+var terrain_changes : Array = [];
 # anim resim
 var ANIM_turn : int = 0;
 var ANIM_turnmax : int = 0;
@@ -968,6 +977,8 @@ func refresh_puzzles_completed() -> void:
 
 var has_spikes : bool = false;
 var has_crate_goals : bool = false;
+var has_holes : bool = false;
+var has_floorboards : bool = false;
 
 func ready_map() -> void:
 	won = false;
@@ -995,6 +1006,7 @@ func ready_map() -> void:
 	total_iterations = 0;
 	is_resimulating = false;
 	resimulation_turn = 0;
+	terrain_changes.clear();
 	
 	ANIM_depth = 0;
 	ANIM_turn = 0;
@@ -1031,11 +1043,20 @@ func ready_map() -> void:
 
 	has_crate_goals = false;
 	has_spikes = false;
+	has_holes = false;
+	has_floorboards = false;
 	
 	if (any_layer_has_this_tile(Tiles.Spikes) or any_layer_has_this_tile(Tiles.OrangeSpikes)):
 		has_spikes = true;
 	if (any_layer_has_this_tile(Tiles.CrateGoal)):
 		has_crate_goals = true;
+	if (any_layer_has_this_tile(Tiles.Hole)):
+		has_holes = true;
+	if (any_layer_has_this_tile(Tiles.FloorboardsBlue) or any_layer_has_this_tile(Tiles.FloorboardsWhite) or any_layer_has_this_tile(Tiles.FloorboardsOrange)):
+		has_floorboards = true;
+
+	if (has_floorboards):
+		floorboards_rotation();
 
 	calculate_map_size();
 	make_actors();
@@ -1213,12 +1234,14 @@ func find_goals() -> void:
 			add_actor_or_goal_at_appropriate_layer(goal, i);
 			goal.update_graphics();
 	
-func add_actor_or_goal_at_appropriate_layer(thing: Node2D, i: int) -> void:
+func add_actor_or_goal_at_appropriate_layer(thing: ActorBase, i: int) -> void:
+	thing.terrain_layer = i;
 	terrain_layers[i].add_child(thing);
 	if (i == terrain_layers.size() - 1):
 		terrain_layers[i].move_child(thing, terrain_layers[i-1].get_index());
 
-func add_actor_or_goal_at_appropriate_layer_at_back(thing: Node2D, i: int) -> void:
+func add_actor_or_goal_at_appropriate_layer_at_back(thing: ActorBase, i: int) -> void:
+	thing.terrain_layer = i;
 	terrain_layers[i].add_child(thing);
 	terrain_layers[i].move_child(thing, 0);
 
@@ -1279,9 +1302,6 @@ func update_targeter() -> void:
 	pass
 		
 func prepare_audio() -> void:
-	# TODO: I could automate this if I can iterate the folder
-	# TODO: replace this with an enum and assert on startup like tiles
-	
 	#new SFX
 	sounds["spliceflower"] = preload("res://sfx/spliceflower.ogg");
 	sounds["wonderchange"] = preload("res://sfx/wonderchange.ogg");
@@ -1308,6 +1328,7 @@ func prepare_audio() -> void:
 	sounds["usegreenality"] = preload("res://sfx/usegreenality.ogg");
 	sounds["infloop"] = preload("res://sfx/infloop.ogg");
 	sounds["broken"] = preload("res://sfx/broken.ogg");
+	sounds["crashland"] = preload("res://sfx/crashland.ogg");
 
 	music_tracks.append(preload("res://music/Eternal Edifice.ogg"));
 	music_info.append("Patashu - Eternal Edifice");
@@ -1459,6 +1480,21 @@ is_move: bool = false, can_push: bool = true) -> int:
 		add_undo_event([Undo.move, actor, dir, was_push],
 		chrono_for_maybe_green_actor(actor, chrono));
 
+		# floorboards check
+		if (actor == player and has_floorboards and chrono < Chrono.META_UNDO):
+			var old_terrain = terrain_in_tile(old_pos, actor, chrono);
+			for i in range(old_terrain.size()):
+				var tile = old_terrain[i];
+				match tile:
+					Tiles.FloorboardsBlue:
+						maybe_change_terrain(actor, old_pos, i, hypothetical, Greenness.Mundane, chrono, -1);
+					Tiles.FloorboardsWhite:
+						maybe_change_terrain(actor, old_pos, i, hypothetical, Greenness.Green, chrono, -1);
+					Tiles.FloorboardsOrange:
+						add_to_animation_server(actor, [Anim.wonderchange], true);
+						TEMP_wonderchanged = true;
+						maybe_change_terrain(actor, old_pos, i, hypothetical, Greenness.Green, chrono, -1);
+
 		#do sound effects for special moves and their undoes
 		if (was_push and is_retro):
 			pass
@@ -1488,32 +1524,73 @@ is_move: bool = false, can_push: bool = true) -> int:
 func actors_in_tile(pos: Vector2) -> Array:
 	var result = [];
 	for actor in actors:
-		if actor.pos == pos:
+		if actor.pos == pos and actor_tangible(actor):
 			result.append(actor);
 	return result;
 
-func terrain_in_tile(pos: Vector2, actor: Actor = null, chrono: int = Chrono.TIMELESS) -> Array:
+func actor_tangible(actor : Actor) -> bool:
+	if (has_floorboards):
+		var terrain_in_tile = terrain_in_tile(actor.pos, actor, Chrono.MOVE);
+		for layer in range(terrain_in_tile.size()):
+			var terrain = terrain_in_tile[layer];
+			if floorboards_dict.has(terrain):
+				return actor.terrain_layer <= layer;
+	return true;
+
+func terrain_in_tile(pos: Vector2, actor: Actor = null, chrono: int = Chrono.TIMELESS, xray: bool = false) -> Array:
 	var result = [];
 	for layer in terrain_layers:
 		result.append(layer.get_cellv(pos));
+	if (has_floorboards and !xray):
+		var found = false;
+		for i in range(result.size()):
+			if found:
+				result[i] = -99;
+			elif floorboards_dict.has(result[i]):
+				found = true;
 	return result;
 
 func chrono_for_maybe_green_actor(actor: Actor, chrono: int) -> int:
 	return chrono;
 
+func floorboards_rotation() -> void:
+	all_rotation(floorboards_ids);
+	
+func all_rotation(candidates: Array) -> void:
+	var floorboard_counts = {};
+	for i in range(terrain_layers.size()-1, -1, -1):
+		var layer = terrain_layers[i];
+		for id in candidates:
+			var tiles = layer.get_used_cells_by_id(id);
+			for tile in tiles:
+				if floorboard_counts.has(tile):
+					var count = floorboard_counts[tile] + 1;
+					floorboard_counts[tile] = count;
+					layer.set_cellv(tile, id, count % 2 == 1, (count / 2) % 2 == 1, (count / 4) % 2 == 1);
+				else:
+					floorboard_counts[tile] = 0;
+
+var floorboards_ids = [Tiles.FloorboardsBlue, Tiles.FloorboardsWhite, Tiles.FloorboardsOrange];
+var floorboards_dict = {Tiles.FloorboardsBlue: true, Tiles.FloorboardsWhite: true, Tiles.FloorboardsOrange: true};
+
 func set_cellv_maybe_rotation(id: int, tile: Vector2, layer: int) -> void:
-	terrain_layers[layer].set_cellv(tile, id);
+	if id in floorboards_ids:
+		set_cellv_rotation(id, tile, layer, floorboards_ids);
+	else:
+		terrain_layers[layer].set_cellv(tile, id);
+
+func set_cellv_rotation(id: int, tile: Vector2, layer: int, candidates: Array) -> void:
+	var terrain = terrain_in_tile(tile, null, Chrono.TIMELESS, true);
+	var count = 0;
+	for i in range(terrain.size()):
+		if terrain[i] in candidates:
+			count += 1;
+	terrain_layers[layer].set_cellv(tile, id, count % 2 == 1, (count / 2) % 2 == 1, (count / 4) % 2 == 1);
 
 func maybe_break_actor(actor: Actor, hypothetical: bool, green_terrain: int, chrono: int) -> int:
 	# AD04: being broken makes you immune to breaking :D
 	if (!actor.broken):
 		if (!hypothetical):
-#			if (green_terrain == Greenness.Green and chrono < Chrono.CHAR_UNDO):
-#				chrono = Chrono.CHAR_UNDO;
-#			if (green_terrain == Greenness.Void and chrono < Chrono.META_UNDO):
-#				chrono = Chrono.META_UNDO;
-#			if (actor.is_crystal and chrono < Chrono.CHAR_UNDO):
-#				chrono = Chrono.CHAR_UNDO;
 			set_actor_var(actor, "broken", true, chrono);
 		return Success.Surprise;
 	else:
@@ -1547,14 +1624,29 @@ chrono: int, new_tile: int, assumed_old_tile: int = -2, animation_nonce: int = -
 			# set old_tile again (I guess it'll always be -1 at this point but just to be explicit about it)
 			old_tile = terrain_layer.get_cellv(pos);
 		set_cellv_maybe_rotation(new_tile, pos, layer);
-#		if (green_terrain == Greenness.Green and chrono < Chrono.CHAR_UNDO):
-#			chrono = Chrono.CHAR_UNDO;
-		if (green_terrain == Greenness.Void and chrono < Chrono.META_UNDO):
-			chrono = Chrono.META_UNDO;
-
+		
+		if (chrono == Chrono.MOVE and green_terrain == Greenness.Mundane):
+			remember_terrain_change(pos, layer, old_tile, new_tile);
 		add_undo_event([Undo.change_terrain, actor, pos, layer, old_tile, new_tile, animation_nonce], chrono);
+		if (chrono == Chrono.MOVE and old_tile == Tiles.FloorboardsBlue or old_tile == Tiles.FloorboardsOrange or old_tile == Tiles.FloorboardsWhite):
+			add_to_animation_server(actor, [Anim.shatter_terrain, terrainmap.map_to_world(pos), old_tile, new_tile, animation_nonce]);
+		if (chrono == Chrono.MOVE and old_tile == Tiles.Hole):
+			add_to_animation_server(actor, [Anim.fall]);
 		
 	return Success.Surprise;
+
+func remember_terrain_change(pos: Vector2, layer: int, old_tile: int, new_tile: int) -> void:
+	terrain_changes.append([pos, layer, old_tile, new_tile]);
+	add_undo_event([Undo.remember_terrain_change]);
+
+func forget_terrain_changes() -> void:
+	add_undo_event([Undo.forget_terrain_changes, terrain_changes.duplicate()]);
+	terrain_changes.clear();
+
+func reapply_terrain_changes() -> void:
+	for t in terrain_changes:
+		maybe_change_terrain(player, t[0], t[1], false, Greenness.Green, Chrono.MOVE, t[2], t[3]);
+	forget_terrain_changes();
 
 func no_if_true_yes_if_false(input: bool) -> int:
 	if (input):
@@ -1824,9 +1916,14 @@ func lock_goals() -> bool:
 	if (has_crate_goals):
 		var crate_goals = get_used_cells_by_id_one_array(Tiles.CrateGoal);
 		for crate_goal in crate_goals:
+			# boarded crate goals don't have to be satisfied
+			if (has_floorboards):
+				if (!terrain_in_tile(crate_goal, null, Chrono.MOVE).has(Tiles.CrateGoal)):
+					continue;
+			
 			var crate_goal_satisfied = false;
 			for actor in actors:
-				if actor.pos == crate_goal and actor.actorname != Actor.Name.DepthDoor:
+				if actor.pos == crate_goal and actor.actorname != Actor.Name.DepthDoor and actor_tangible(actor):
 					crate_goal_satisfied = true;
 					break;
 			if (!crate_goal_satisfied):
@@ -1988,6 +2085,10 @@ func undo_one_event(event: Array, chrono : int) -> void:
 			history_moves += event[1];
 		Undo.iteration:
 			total_iterations -= 1;
+		Undo.remember_terrain_change:
+			terrain_changes.pop_back();
+		Undo.forget_terrain_changes:
+			terrain_changes = event[1].duplicate();
 
 func meta_undo_a_restart() -> bool:
 	var meta_undo_a_restart_type = 0;
@@ -2342,7 +2443,6 @@ func increment_iteration() -> void:
 	if (current_depth == 1 and tutorial_complete):
 		update_resiminfolabel(current_depth, 0, history_moves.length())
 	add_undo_event([Undo.iteration], Chrono.MOVE);
-	#TODO: depth doors
 	if (is_resimulating):
 		#truncate history and any other cleanup
 		truncate_history();
@@ -2352,18 +2452,20 @@ func increment_iteration() -> void:
 	for actor in actors:
 		if (actor.actorname != Actor.Name.WonderBlock and actor.actorname != Actor.Name.DepthDoor and actor.actorname != Actor.Name.WhiteBlock):
 			reset_to_home(actor);
+	reapply_terrain_changes();
 	#handle resetfrag
+	#(I guess actors on opposite sides of floorboards won't see each other.)
 	#yay O(n^2)
 	for actor in actors:
 		if (actor.actorname == Actor.Name.StoneBlock):
 			for actor2 in actors:
-				if ((actor2.actorname == Actor.Name.WonderBlock || actor2.actorname == Actor.Name.WhiteBlock) and actor2.pos == actor.pos):
+				if ((actor2.actorname == Actor.Name.WonderBlock || actor2.actorname == Actor.Name.WhiteBlock) and actor2.pos == actor.pos and actor_tangible(actor) == actor_tangible(actor2)):
 					set_actor_var(actor, "broken", true, Chrono.MOVE);
 					break;
 	# player resetfrags blocks
 	for actor in actors:
-		if (actor != player and player.pos == actor.pos and actor.actorname != Actor.Name.DepthDoor):
-			add_to_animation_server(actor, [Anim.shatter]);
+		if (actor != player and player.pos == actor.pos and actor.actorname != Actor.Name.DepthDoor and actor_tangible(actor) == actor_tangible(player)):
+			add_to_animation_server(actor, [Anim.shatter_actor]);
 			set_actor_var(actor, "broken", true, Chrono.MOVE);
 	#loop through history
 	if (tutorial_complete):
@@ -2378,8 +2480,10 @@ func increment_iteration() -> void:
 	animation_substep(Chrono.MOVE);
 	for h_i in range(history_moves.length()):
 		resimulation_turn = h_i;
-		# TODO: first 1mil turns
 		add_to_animation_server(null, [Anim.resim_values, current_depth, resimulation_turn, history_moves.length()]);
+		if (player.broken):
+			truncate_history();
+			break;
 		var h = history_moves[h_i];
 		var h_lower = h.to_lower();
 		var was_push = h_lower != h;
@@ -2417,12 +2521,15 @@ func increment_iteration() -> void:
 	resimulation_turn = 0;
 	is_resimulating = false;
 	add_to_animation_server(null, [Anim.resim_values, current_depth, history_moves.length(), history_moves.length()]);
-	#TODO: depth doors
 
 func splice_flower() -> void:
 	TEMP_steppedonspliceflower = false;
+	# for additional fun :)
+	if (player.broken):
+		set_actor_var(player, "broken", false, Chrono.MOVE);
 	resimulation_turn = -1; #un-fixing the off-by-one lmao
 	truncate_history();
+	forget_terrain_changes();
 	resimulation_turn = 0;
 	for actor in actors:
 		if (actor.actorname != Actor.Name.DepthDoor):
@@ -2467,6 +2574,26 @@ func time_passes(chrono: int) -> void:
 			TEMP_wonderchanged = true;
 		elif (terrain.has(Tiles.Spikes)):
 			set_actor_var(player, "broken", true, chrono);
+	
+	#holes
+	if (has_holes and chrono < Chrono.META_UNDO):
+		for actor in actors:
+			if (actor.broken or actor.actorname == Actor.Name.DepthDoor):
+				continue
+			var terrain = terrain_in_tile(actor.pos, actor, chrono);
+			for i in range(terrain.size()):
+				var tile = terrain[i];
+				if tile == Tiles.Hole:
+					set_actor_var(actor, "broken", true, chrono);
+					var greenness = Greenness.Mundane;
+					if (actor.actorname == Actor.Name.WonderBlock or actor.actorname == Actor.Name.WhiteBlock):
+						greenness = Greenness.Green;
+					# this should probably be generalized but no need to do it yet
+					if (actor.actorname == Actor.Name.WonderBlock):
+						TEMP_wonderchanged = true;
+						add_to_animation_server(actor, [Anim.wonderchange], true);
+					maybe_change_terrain(actor, actor.pos, i, false, greenness, chrono, -1);
+					break;
 	
 func currently_fast_replay() -> bool:
 	if (!doing_replay):
@@ -2721,7 +2848,6 @@ func update_info_labels() -> void:
 	
 	metaredobutton.visible = meta_redo_inputs != "";
 
-	# TODO: need the +1mil for tutorial_complete = false here
 	if (tutorial_complete):
 		metainfolabel.text = "Turn: " + str(history_moves.length()) + "\nIterations: " + str(total_iterations) + "\nInputs: " + str(meta_turn);
 	else:

@@ -480,7 +480,7 @@ func _process(delta: float) -> void:
 					frame = hframes-1;
 				else:
 					frame = 0;
-			17: #shatter
+			17: #shatter_actor
 				var overactorsparticles = gamelogic.overactorsparticles;
 				for i in range(4):
 					var sprite = Sprite.new();
@@ -502,6 +502,44 @@ func _process(delta: float) -> void:
 						sprite.region_rect.position.y -= 8;
 					overactorsparticles.add_child(sprite);
 				gamelogic.play_sound("broken");
+				gamelogic.play_sound("crashland");
+			18: #shatter_terrain
+				var overactorsparticles = gamelogic.overactorsparticles;
+				for i in range(4):
+					var sprite = Sprite.new();
+					sprite.set_script(preload("res://FadingSprite.gd"));
+					sprite.texture = gamelogic.terrainmap.tile_set.tile_get_texture(current_animation[2]);
+					sprite.position = current_animation[1] + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+					sprite.position.x += -6+(i%2)*12;
+					sprite.position.y += -6+floor(i/2)*12;
+					sprite.centered = true;
+					sprite.velocity = Vector2(gamelogic.rng.randf_range(12, 24), gamelogic.rng.randf_range(12, 24));
+					sprite.fadeout_timer_max = 1.0;
+					sprite.region_enabled = true;
+					sprite.region_rect = Rect2(8, 8, 8, 8);
+					if (i % 2 == 0):
+						sprite.velocity.x *= -1;
+						sprite.region_rect.position.x -= 8;
+					if (floor(i / 2) == 0):
+						sprite.velocity.y *= -1;
+						sprite.region_rect.position.y -= 8;
+					overactorsparticles.add_child(sprite);
+				gamelogic.play_sound("ouch");
+			19: #fall
+				gamelogic.play_sound("crashland");
+				for i in range(10):
+					var sprite = Sprite.new();
+					sprite.set_script(preload("res://FadingSprite.gd"));
+					sprite.texture = preload("res://assets/dust.png")
+					sprite.hframes = 8;
+					sprite.vframes = 1;
+					sprite.frame = gamelogic.rng.randi_range(0, sprite.hframes - 1);
+					sprite.fadeout_timer_max = 0.4;
+					sprite.velocity = Vector2(gamelogic.rng.randf_range(16, 32), 0).rotated(gamelogic.rng.randf_range(0, PI*2));
+					sprite.position = position + Vector2(gamelogic.cell_size/2, gamelogic.cell_size/2);
+					sprite.centered = true;
+					sprite.modulate = Color("FFEBD8");
+					gamelogic.overactorsparticles.add_child(sprite);
 		if (is_done):
 			animations.pop_front();
 			animation_timer = 0;
